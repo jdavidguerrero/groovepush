@@ -11,8 +11,14 @@ while preserving their full commit history.
 |---|---|---|
 | `ableton_push_clone_gui` | `apps/gui` | https://github.com/jdavidguerrero/ableton_push_clone_gui.git |
 | `ableton_push_clone_processor` | `apps/processor` | https://github.com/jdavidguerrero/ableton_push_clone_processor.git |
+| `ableton_midi_api_integration` | `apps/remote-script` | https://github.com/jdavidguerrero/ableton_midi_api_integration.git |
 
-Both were on branch `main`, 9 commits each, working trees clean at time of migration.
+- GUI & processor: branch `main`, 9 commits each, working trees clean.
+- Remote Script: branch `main`, 14 commits. **Imported from the live Ableton folder**
+  (`~/Music/Ableton/User Library/Remote Scripts/PushClone`), which has uncommitted
+  local edits. The committed history was subtree-merged first, then the current
+  working-tree state was synced on top (see the extra sync commit). The original
+  Ableton folder was **left intact** because Ableton loads the script from there.
 
 ## Method
 

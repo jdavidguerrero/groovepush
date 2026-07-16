@@ -8,6 +8,7 @@ A monorepo unifying the three layers of the controller:
 |---|---|---|---|
 | **Processor / firmware** | [`apps/processor`](apps/processor) | C++ / Arduino (PlatformIO) | Teensy 4.1 (brain) + NeoTrellis M4 (8×4 pads) |
 | **GUI** | [`apps/gui`](apps/gui) | C++ / Qt 6 / QML | Raspberry Pi 5 + 5" DSI display |
+| **Remote Script** | [`apps/remote-script`](apps/remote-script) | Python (Ableton LOM) | Ableton Live (MIDI/API integration) |
 | **Hardware** | [`hardware/`](hardware) | KiCad | Main PCB / interconnect |
 
 Planning & contracts live in [`specs/`](specs) and [`docs/`](docs).
@@ -41,8 +42,9 @@ Planning & contracts live in [`specs/`](specs) and [`docs/`](docs).
 ```
 GroovePush/
 ├── apps/
-│   ├── gui/          # Qt6/QML GUI (Raspberry Pi 5) — imported with full git history
-│   └── processor/    # PlatformIO firmware (Teensy 4.1 + NeoTrellis M4) — full git history
+│   ├── gui/            # Qt6/QML GUI (Raspberry Pi 5) — imported with full git history
+│   ├── processor/      # PlatformIO firmware (Teensy 4.1 + NeoTrellis M4) — full git history
+│   └── remote-script/  # Ableton Remote Script (Python/LOM) — full git history
 ├── hardware/         # KiCad project (schematic + PCB)
 ├── specs/            # OpenSpec-style specifications (source of truth for implementation)
 ├── docs/             # Design specs, guides, ADRs
@@ -73,7 +75,8 @@ make gui-build
 
 ## History
 
-`apps/gui` and `apps/processor` were previously two standalone GitHub repos
-(`ableton_push_clone_gui`, `ableton_push_clone_processor`). They were merged into
-this monorepo **preserving their full commit history** via `git subtree` merge.
-The original remotes are preserved in `docs/MONOREPO_MIGRATION.md`.
+`apps/gui`, `apps/processor`, and `apps/remote-script` were previously three
+standalone GitHub repos. They were merged into this monorepo **preserving their full
+commit history** via `git subtree` merge. The Ableton folder copy of the Remote Script
+is the live deploy target and was left in place. Original remotes and the migration
+recipe are documented in `docs/MONOREPO_MIGRATION.md`.

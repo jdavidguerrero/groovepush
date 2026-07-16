@@ -37,3 +37,6 @@ hardware/**/_autosave-*
 
 # ---- Local, machine-specific Claude settings ----
 .claude/settings.local.json
+
+# Stray duplicate clone of the remote-script (lives in apps/remote-script)
+/ableton_midi_api_integration/
