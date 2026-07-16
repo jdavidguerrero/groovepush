@@ -20,7 +20,10 @@ class SongManager:
         self._listeners = []
         self._is_active = False
         
+        self.c_surface.log_message("🔧 Initializing SongManager...")
+        
         # CPU monitoring throttling
+        self._cpu_monitor_enabled = ENABLE_CPU_USAGE_STREAM
         self._last_cpu_log_time = 0
         self._cpu_log_interval = 5.0  # Log CPU only every 5 seconds
         self._last_cpu_values = (0, 0)  # (avg, peak)
@@ -109,14 +112,15 @@ class SongManager:
     
     def _add_application_listeners(self):
         """Add Application object listeners"""
-        # CPU Usage
-        cpu_listener = lambda: self._on_cpu_usage_changed()
-        self.app.add_average_process_usage_listener(cpu_listener)
-        self.app.add_peak_process_usage_listener(cpu_listener)
-        self._listeners.extend([
-            ('average_cpu', cpu_listener),
-            ('peak_cpu', cpu_listener)
-        ])
+        # CPU Usage (optional)
+        if self._cpu_monitor_enabled:
+            cpu_listener = lambda: self._on_cpu_usage_changed()
+            self.app.add_average_process_usage_listener(cpu_listener)
+            self.app.add_peak_process_usage_listener(cpu_listener)
+            self._listeners.extend([
+                ('average_cpu', cpu_listener),
+                ('peak_cpu', cpu_listener)
+            ])
         
         # Control Surfaces
         control_surfaces_listener = lambda: self._on_control_surfaces_changed()
@@ -224,8 +228,7 @@ class SongManager:
         """Song position changed"""
         if self.c_surface._is_connected:
             song_time = self.song.current_song_time
-            # Only log occasionally to avoid spam
-            if int(song_time) % 4 == 0:  # Every 4 beats
+            if LOG_SONG_POSITION_UPDATES and int(song_time) % 4 == 0:
                 self.c_surface.log_message(f"⏱️ Position: {song_time:.2f} beats")
             self._send_song_position_state(song_time)
     
@@ -287,20 +290,25 @@ class SongManager:
             self._send_session_record_state(session_record)
     
     def _on_cpu_usage_changed(self):
-        """CPU usage changed - disabled logging for now"""
-        if not self.c_surface._is_connected:
+        """CPU usage changed - optional stream to hardware"""
+        if not (self.c_surface._is_connected and self._cpu_monitor_enabled):
             return
             
         try:
-            avg_cpu = self.app.average_process_usage
-            peak_cpu = self.app.peak_process_usage
+            avg_cpu = getattr(self.app, 'average_process_usage', 0.0)
+            peak_cpu = getattr(self.app, 'peak_process_usage', 0.0)
             
             # Only log when CPU is REALLY high (above 80%)
             if peak_cpu > 80.0:
                 self.c_surface.log_message(f"⚠️ VERY HIGH CPU: Avg:{avg_cpu:.1f}% Peak:{peak_cpu:.1f}%")
             
-            # Send to hardware for real-time monitoring (silent)
-            self._send_cpu_usage_state(avg_cpu, peak_cpu)
+            # Send to hardware throttled (once per second max)
+            import time
+            now = time.time()
+            last_sent = getattr(self, '_last_cpu_send', 0)
+            if now - last_sent >= self._cpu_log_interval:
+                self._last_cpu_send = now
+                self._send_cpu_usage_state(avg_cpu, peak_cpu)
             
         except Exception as e:
             self.c_surface.log_message(f"❌ Error in CPU monitoring: {e}")
@@ -338,15 +346,18 @@ class SongManager:
     # ========================================
     
     def _send_tempo_state(self, tempo):
-        """Send tempo to hardware"""
+        """Send tempo to hardware (14-bit encoding)"""
         try:
-            # Convert tempo to int (BPM) and fraction
-            tempo_int = int(tempo)
-            tempo_fraction = int((tempo - tempo_int) * 100)  # 0-99
-            
-            payload = [tempo_int, tempo_fraction]
+            # Encode as 14-bit value (same format as mixer params)
+            # Teensy decodes: ((MSB << 7) | LSB) / 10.0
+            value_14bit = int(tempo * 10)  # e.g., 120.0 → 1200
+            msb = (value_14bit >> 7) & 0x7F
+            lsb = value_14bit & 0x7F
+
+            payload = [msb, lsb]
+            self.c_surface.log_message(f"🎼 Sending BPM: {tempo:.1f} → 14bit={value_14bit} MSB={msb} LSB={lsb}")
             self.c_surface._send_sysex_command(CMD_TRANSPORT_TEMPO, payload)
-            
+
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending tempo: {e}")
     
@@ -362,10 +373,20 @@ class SongManager:
     def _send_song_position_state(self, song_time):
         """Send song position to hardware"""
         try:
-            # Convert to bars.beats.sixteenths
-            beats = int(song_time) % 4
-            bars = int(song_time) // 4
-            sixteenths = int((song_time - int(song_time)) * 16)
+            # Convert to bars.beats.sixteenths using current time signature
+            numerator = max(1, int(self.song.signature_numerator))
+            denominator = max(1, int(self.song.signature_denominator))
+            quarter_per_beat = 4.0 / denominator
+            bar_length_quarters = numerator * quarter_per_beat
+            if bar_length_quarters <= 0:
+                bar_length_quarters = 4.0
+            
+            bars = int(song_time // bar_length_quarters)
+            beat_time = song_time - (bars * bar_length_quarters)
+            current_beat = int(beat_time // quarter_per_beat)
+            beat_fraction = beat_time - (current_beat * quarter_per_beat)
+            sixteenths = int((song_time - int(song_time)) * 16) & 0x7F
+            beats = current_beat & 0x7F
             
             payload = [bars & 0x7F, beats, sixteenths]
             self.c_surface._send_sysex_command(CMD_TRANSPORT_POSITION, payload)
@@ -425,14 +446,15 @@ class SongManager:
     
     def _send_cpu_usage_state(self, avg_cpu, peak_cpu):
         """Send CPU usage to hardware"""
+        if not self._cpu_monitor_enabled:
+            return
         try:
             # Convert to 0-127 range
             avg_byte = int(avg_cpu * 127)
             peak_byte = int(peak_cpu * 127)
             
-            payload = [avg_byte, peak_byte]
-            # Using a general purpose command since no specific CPU command exists
-            # Could be added to consts.py as CMD_CPU_USAGE = 0x5B
+            payload = [avg_byte & 0x7F, peak_byte & 0x7F]
+            self.c_surface._send_sysex_command(CMD_CPU_USAGE, payload)
             
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending CPU usage: {e}")
@@ -462,10 +484,10 @@ class SongManager:
             time_bars = int(cue_point.time) // 4
             time_beats = int(cue_point.time) % 4
             
-            payload = [cue_idx, time_bars & 0x7F, time_beats, len(name_bytes)]
-            payload.extend(list(name_bytes))
-            
-            # Could be added as CMD_CUE_POINT = 0x5C
+            payload = [cue_idx & 0x7F, time_bars & 0x7F, time_beats & 0x7F, len(name_bytes) & 0x7F]
+            payload.extend([b & 0x7F for b in name_bytes])  # Ensure 7-bit
+
+            self.c_surface._send_sysex_command(CMD_CUE_POINT, payload)
             
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending cue point {cue_idx}: {e}")
@@ -510,7 +532,8 @@ class SongManager:
             if hasattr(self.song, 'session_record'):
                 self._send_session_record_state(self.song.session_record)
             
-            self._send_cpu_usage_state(self.app.average_process_usage, self.app.peak_process_usage)
+            if self._cpu_monitor_enabled:
+                self._send_cpu_usage_state(self.app.average_process_usage, self.app.peak_process_usage)
             self._send_cue_points_list(self.song.cue_points)
             
             self.c_surface.log_message("✅ Song state sent")

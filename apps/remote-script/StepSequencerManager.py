@@ -17,6 +17,8 @@ class StepSequencerManager:
         self.song = control_surface.song()
         self._is_active = False
         
+        self.c_surface.log_message("🔧 Initializing StepSequencerManager...")
+        
         # Enhanced step sequencer state
         self._notes = [] # List of notes in the sequence
         self._resolution = 16 # 1/16 notes by default (higher resolution)
@@ -126,7 +128,10 @@ class StepSequencerManager:
             playhead = int(self.song.current_song_time * self._resolution) % 32
             grid_data[playhead] = 2
 
-        message = SysExEncoder.encode_step_sequencer_state(grid_data)
+        message = SysExEncoder.encode_step_sequencer_state(
+            grid_data,
+            page=self._page
+        )
         if message:
             self.c_surface._send_midi(tuple(message))
 

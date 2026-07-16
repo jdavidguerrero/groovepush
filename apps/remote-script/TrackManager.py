@@ -18,6 +18,13 @@ class TrackManager:
         self.song = control_surface.song()
         self._track_listeners = {}  # track_idx: [listeners]
         self._is_active = False
+
+        self.c_surface.log_message("🔧 Initializing TrackManager...")
+
+        # Metering throttling (prevent MIDI saturation)
+        self._meter_values = {}      # track_idx: current_peak
+        self._meter_last_sent = {}   # track_idx: timestamp_ms
+        self._meter_interval_ms = 50 # 20Hz update rate (instead of 60Hz raw)
         
     def setup_listeners(self, max_tracks=8):
         """Setup track listeners for specified number of tracks"""
@@ -96,7 +103,16 @@ class TrackManager:
                 devices_listener = lambda idx=track_idx: self._on_track_devices_changed(idx)
                 track.add_devices_listener(devices_listener)
                 listeners.append(('devices', devices_listener))
-            
+
+            # Output metering (VU meter with throttling)
+            if hasattr(track, 'output_meter_level'):
+                meter_listener = lambda idx=track_idx: self._on_track_meter_changed(idx)
+                track.add_output_meter_level_listener(meter_listener)
+                listeners.append(('output_meter_level', meter_listener))
+                # Initialize throttling variables
+                self._meter_values[track_idx] = 0.0
+                self._meter_last_sent[track_idx] = 0
+
             # === MIXER DEVICE ===
             self._setup_mixer_listeners(track_idx, track, listeners)
             
@@ -126,7 +142,21 @@ class TrackManager:
                 send_listener = lambda t_idx=track_idx, s_idx=send_idx: self._on_track_send_changed(t_idx, s_idx)
                 send.add_value_listener(send_listener)
                 listeners.append((f'send_{send_idx}', send_listener))
-                
+
+            # Crossfade Assign (A/None/B for DJ-style crossfader)
+            if hasattr(mixer, 'crossfade_assign'):
+                crossfade_listener = lambda idx=track_idx: self._on_track_crossfade_changed(idx)
+                mixer.add_crossfade_assign_listener(crossfade_listener)
+                listeners.append(('crossfade_assign', crossfade_listener))
+
+            # Cue Volume (solo/master headphone) - only available on master track
+            if track is self.song.master_track:
+                cue_control = getattr(mixer, 'cue_volume', None)
+                if cue_control:
+                    cue_listener = lambda idx=track_idx: self._on_track_cue_volume_changed(idx)
+                    cue_control.add_value_listener(cue_listener)
+                    listeners.append(('cue_volume', cue_listener))
+
         except Exception as e:
             self.c_surface.log_message(f"❌ Error setting up mixer listeners for track {track_idx}: {e}")
     
@@ -169,6 +199,12 @@ class TrackManager:
                                 send_idx = int(listener_type.split('_')[1])
                                 if send_idx < len(mixer.sends):
                                     mixer.sends[send_idx].remove_value_listener(listener_func)
+                            elif listener_type == 'output_meter_level':
+                                track.remove_output_meter_level_listener(listener_func)
+                            elif listener_type == 'crossfade_assign':
+                                mixer.remove_crossfade_assign_listener(listener_func)
+                            elif listener_type == 'cue_volume':
+                                mixer.cue_volume.remove_value_listener(listener_func)
                         except:
                             pass  # Ignore if already removed
             
@@ -227,6 +263,7 @@ class TrackManager:
             playing_slot = track.playing_slot_index
             self.c_surface.log_message(f"▶️ Track {track_idx} playing slot: {playing_slot}")
             self._send_track_playing_slot(track_idx, playing_slot)
+            self._notify_clip_manager_playing_slot(track_idx, playing_slot)
     
     def _on_track_fired_slot_changed(self, track_idx):
         """Track fired slot changed"""
@@ -235,6 +272,7 @@ class TrackManager:
             fired_slot = track.fired_slot_index
             self.c_surface.log_message(f"🔥 Track {track_idx} fired slot: {fired_slot}")
             self._send_track_fired_slot(track_idx, fired_slot)
+            self._notify_clip_manager_fired_slot(track_idx, fired_slot)
     
     def _on_track_fold_changed(self, track_idx):
         """Track fold state changed"""
@@ -285,7 +323,64 @@ class TrackManager:
                 send_value = track.mixer_device.sends[send_idx].value
                 self.c_surface.log_message(f"📤 Track {track_idx} send {send_idx}: {send_value:.2f}")
                 self._send_track_send_state(track_idx, send_idx, send_value)
-    
+
+    def _on_track_crossfade_changed(self, track_idx):
+        """Track crossfade assign changed (A/None/B)"""
+        if self.c_surface._is_connected and track_idx < len(self.song.tracks):
+            track = self.song.tracks[track_idx]
+            mixer = track.mixer_device
+            if hasattr(mixer, 'crossfade_assign'):
+                # crossfade_assign values: 0=A (left), 1=None (center), 2=B (right)
+                crossfade = mixer.crossfade_assign
+                crossfade_str = ['A', 'None', 'B'][crossfade]
+                self.c_surface.log_message(f"⚡ Track {track_idx} crossfade: {crossfade_str}")
+                self._send_track_crossfade(track_idx, crossfade)
+
+    def _on_track_cue_volume_changed(self, track_idx):
+        """Track cue volume changed (pre-listen/headphone monitoring)"""
+        if self.c_surface._is_connected and track_idx < len(self.song.tracks):
+            track = self.song.tracks[track_idx]
+            mixer = track.mixer_device
+            if hasattr(mixer, 'cue_volume'):
+                cue_volume = mixer.cue_volume.value  # 0.0 to 1.0
+                self.c_surface.log_message(f"🎧 Track {track_idx} cue volume: {cue_volume:.2f}")
+                self._send_track_cue_volume(track_idx, cue_volume)
+
+    def _on_track_meter_changed(self, track_idx):
+        """Track output meter level changed (VU meter with throttling)"""
+        if not self.c_surface._is_connected or track_idx >= len(self.song.tracks):
+            return
+
+        try:
+            import time
+            track = self.song.tracks[track_idx]
+            current_time_ms = int(time.time() * 1000)
+
+            # Get current meter value (0.0 to 1.0)
+            meter_level = track.output_meter_level
+
+            # Update peak value (peak hold strategy)
+            if track_idx not in self._meter_values:
+                self._meter_values[track_idx] = meter_level
+                self._meter_last_sent[track_idx] = 0
+
+            # Track the peak value within throttle interval
+            self._meter_values[track_idx] = max(self._meter_values[track_idx], meter_level)
+
+            # Check if throttle interval has elapsed
+            time_since_last = current_time_ms - self._meter_last_sent[track_idx]
+            if time_since_last >= self._meter_interval_ms:
+                # Send the peak value accumulated during interval
+                peak_value = self._meter_values[track_idx]
+                self._send_track_meter(track_idx, peak_value)
+
+                # Reset for next interval
+                self._meter_values[track_idx] = 0.0
+                self._meter_last_sent[track_idx] = current_time_ms
+
+        except Exception as e:
+            self.c_surface.log_message(f"❌ Error in meter handler T{track_idx}: {e}")
+
     # ========================================
     # SEND METHODS
     # ========================================
@@ -294,9 +389,13 @@ class TrackManager:
         """Send track name to hardware"""
         try:
             name_bytes = name.encode('utf-8')[:12]  # Max 12 chars
-            payload = [track_idx, len(name_bytes)]
-            payload.extend(list(name_bytes))
-            self.c_surface._send_sysex_command(CMD_TRACK_NAME, payload)
+            coalescer = getattr(self.c_surface, '_message_coalescer', None)
+            if coalescer:
+                coalescer.queue_track_name(track_idx, list(name_bytes))
+            else:
+                payload = [track_idx, len(name_bytes)]
+                payload.extend(list(name_bytes))
+                self.c_surface._send_sysex_command(CMD_TRACK_NAME, payload)
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending track name T{track_idx}: {e}")
     
@@ -309,8 +408,12 @@ class TrackManager:
             g = min(127, max(0, g // 2))
             b = min(127, max(0, b // 2))
             
-            payload = [track_idx, r, g, b]
-            self.c_surface._send_sysex_command(CMD_TRACK_COLOR, payload)
+            coalescer = getattr(self.c_surface, '_message_coalescer', None)
+            if coalescer:
+                coalescer.queue_track_color(track_idx, r, g, b)
+            else:
+                payload = [track_idx, r, g, b]
+                self.c_surface._send_sysex_command(CMD_TRACK_COLOR, payload)
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending track color T{track_idx}: {e}")
     
@@ -339,32 +442,88 @@ class TrackManager:
             self.c_surface.log_message(f"❌ Error sending track arm T{track_idx}: {e}")
     
     def _send_track_volume_state(self, track_idx, volume):
-        """Send track volume state to hardware"""
+        """Send track volume state to hardware (14-bit resolution)"""
         try:
-            volume_127 = int(volume * 127)
-            payload = [track_idx, volume_127]
+            # Convert 0.0-1.0 to 14-bit (0-16383)
+            value14bit = int(volume * 16383)
+            msb = (value14bit >> 7) & 0x7F
+            lsb = value14bit & 0x7F
+            payload = [track_idx, msb, lsb]
+            self.c_surface.log_message(f"📤 Send T{track_idx} VOL: vol={volume:.3f} → 14bit={value14bit} MSB=0x{msb:02X} LSB=0x{lsb:02X} len={len(payload)}")
             self.c_surface._send_sysex_command(CMD_MIXER_VOLUME, payload)
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending track volume T{track_idx}: {e}")
     
     def _send_track_pan_state(self, track_idx, pan):
-        """Send track pan state to hardware"""
+        """Send track pan state to hardware (14-bit resolution)"""
         try:
-            pan_127 = int((pan + 1.0) * 63.5)  # Convert -1.0/1.0 to 0-127
-            payload = [track_idx, pan_127]
+            # Convert -1.0/+1.0 to 14-bit (0-16383, center=8192)
+            value14bit = int((pan + 1.0) * 8191.5)
+            msb = (value14bit >> 7) & 0x7F
+            lsb = value14bit & 0x7F
+            payload = [track_idx, msb, lsb]
             self.c_surface._send_sysex_command(CMD_MIXER_PAN, payload)
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending track pan T{track_idx}: {e}")
     
     def _send_track_send_state(self, track_idx, send_idx, send_value):
-        """Send track send state to hardware"""
+        """Send track send state to hardware (14-bit resolution)"""
         try:
-            send_127 = int(send_value * 127)
-            payload = [track_idx, send_idx, send_127]
+            # Convert 0.0-1.0 to 14-bit (0-16383)
+            value14bit = int(send_value * 16383)
+            msb = (value14bit >> 7) & 0x7F
+            lsb = value14bit & 0x7F
+            payload = [track_idx, send_idx, msb, lsb]
             self.c_surface._send_sysex_command(CMD_MIXER_SEND, payload)
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending track send T{track_idx}S{send_idx}: {e}")
-    
+
+    def _send_track_crossfade(self, track_idx, crossfade_assign):
+        """
+        Send track crossfade assign to hardware
+
+        Args:
+            track_idx (int): Track index
+            crossfade_assign (int): 0=A (left), 1=None (center), 2=B (right)
+        """
+        try:
+            payload = [track_idx, crossfade_assign]
+            self.c_surface._send_sysex_command(CMD_TRACK_CROSSFADE, payload)
+        except Exception as e:
+            self.c_surface.log_message(f"❌ Error sending track crossfade T{track_idx}: {e}")
+
+    def _send_track_cue_volume(self, track_idx, cue_volume):
+        """
+        Send track cue volume (pre-listen/headphone) to hardware
+
+        Args:
+            track_idx (int): Track index
+            cue_volume (float): Cue volume 0.0 to 1.0
+        """
+        try:
+            cue_127 = int(cue_volume * 127)
+            payload = [track_idx, cue_127]
+            self.c_surface._send_sysex_command(CMD_TRACK_CUE_VOLUME, payload)
+        except Exception as e:
+            self.c_surface.log_message(f"❌ Error sending track cue volume T{track_idx}: {e}")
+
+    def _send_track_meter(self, track_idx, meter_level):
+        """
+        Send track output meter level to hardware (throttled to 20Hz)
+
+        Args:
+            track_idx (int): Track index
+            meter_level (float): Peak meter level 0.0 to 1.0
+        """
+        try:
+            # Convert to 7-bit MIDI (0-127)
+            meter_127 = int(meter_level * 127)
+            payload = [track_idx, meter_127]
+            self.c_surface._send_sysex_command(CMD_TRACK_METER, payload)
+        except Exception as e:
+            # Don't log meter errors (too verbose)
+            pass
+
     def _send_track_playing_slot(self, track_idx, playing_slot):
         """Send track playing slot to hardware"""
         try:
@@ -400,6 +559,35 @@ class TrackManager:
             self.c_surface._send_sysex_command(CMD_TRACK_FIRED_SLOT, payload)
         except Exception as e:
             self.c_surface.log_message(f"❌ Error sending track fired slot T{track_idx}: {e}")
+
+    def _notify_clip_manager_fired_slot(self, track_idx, fired_slot):
+        """Let ClipManager refresh pad state based on fired slot changes."""
+        try:
+            clip_manager = self.c_surface.get_manager('clip')
+            if not clip_manager or not hasattr(clip_manager, 'handle_track_fired_slot'):
+                return
+            if fired_slot is None or fired_slot < 0 or fired_slot > 127:
+                return
+            clip_manager.handle_track_fired_slot(track_idx, fired_slot)
+        except Exception as e:
+            self.c_surface.log_message(f"❌ Error notifying clip manager about fired slot: {e}")
+
+    def _notify_clip_manager_playing_slot(self, track_idx, playing_slot):
+        """Let ClipManager refresh pad state based on playing slot changes."""
+        try:
+            clip_manager = self.c_surface.get_manager('clip')
+            if not clip_manager:
+                return
+            if playing_slot is None or playing_slot < 0:
+                handler = getattr(clip_manager, 'handle_track_stopped', None)
+                if handler:
+                    handler(track_idx)
+            else:
+                handler = getattr(clip_manager, 'handle_track_playing_slot', None)
+                if handler:
+                    handler(track_idx, playing_slot)
+        except Exception as e:
+            self.c_surface.log_message(f"❌ Error notifying clip manager about playing slot: {e}")
     
     def _send_track_fold_state(self, track_idx, is_folded):
         """Send track fold state to hardware"""
@@ -461,11 +649,21 @@ class TrackManager:
             # Send sends
             for send_idx, send in enumerate(mixer.sends[:3]):
                 self._send_track_send_state(track_idx, send_idx, send.value)
-            
+
+            # Send new mixer features
+            if hasattr(mixer, 'crossfade_assign'):
+                self._send_track_crossfade(track_idx, mixer.crossfade_assign)
+
+            if hasattr(mixer, 'cue_volume'):
+                self._send_track_cue_volume(track_idx, mixer.cue_volume.value)
+
+            # Note: Metering is NOT sent in initial state (only real-time updates)
+            # because it's high-frequency streaming data
+
             # Send states
             self._send_track_playing_slot(track_idx, track.playing_slot_index)
             self._send_track_fired_slot(track_idx, track.fired_slot_index)
-            
+
             if hasattr(track, 'is_foldable') and track.is_foldable:
                 self._send_track_fold_state(track_idx, track.is_folded)
             
@@ -476,15 +674,20 @@ class TrackManager:
         """Refresh listeners for all tracks (when tracks are added/removed)"""
         try:
             self.c_surface.log_message("🔄 Refreshing all track listeners...")
-            
+
             # Clean up all existing listeners
             self.cleanup_listeners()
-            
+
             # Re-setup listeners for all current tracks
             self.setup_listeners(max_tracks=8)
-            
-            self.c_surface.log_message("✅ All track listeners refreshed")
-            
+
+            # After reattaching listeners, push a fresh snapshot so new tracks
+            # (or reordered ones) immediately get their metadata on hardware.
+            # NOTE: Disabled - SessionRing now handles this with bulk commands
+            # self.send_complete_state()
+
+            self.c_surface.log_message("✅ All track listeners refreshed (SessionRing will send bulk update)")
+
         except Exception as e:
             self.c_surface.log_message(f"❌ Error refreshing all tracks: {e}")
     
