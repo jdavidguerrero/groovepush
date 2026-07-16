@@ -1,5 +1,11 @@
 # Push Clone - Teensy 4.1 Pin Distribution
 
+> ⚠️ **Pin assignments below are SUPERSEDED by [`PIN_MAP.md`](PIN_MAP.md)** (reconciled
+> 2026-07-16, gap G-P1/G-P2/G-P3). `PIN_MAP.md` + `include/shared/Config.h` are the source
+> of truth. This file is retained for the **power budget, NeoPixel distribution, and
+> protocol/wiring notes**, which remain valid. The I2C-on-4/5 and old encoder pin rows here
+> are wrong — use `PIN_MAP.md`.
+
 ## Hardware Overview
 - **Microcontroller**: Teensy 4.1
 - **Main Pad Grid**: NeoTrellis M4 (8x4 = 32 pads)  

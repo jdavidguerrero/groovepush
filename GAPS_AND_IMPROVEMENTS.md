@@ -45,15 +45,15 @@ extend, not throw away.
 ## 1. Processor (`apps/processor`)
 
 **Obsolete / to reconcile**
-- **G-P1 (urgent)** — Encoder pin map disagrees between `PIN_DISTRIBUTION.md` (8 encoders
-  on pins 0,1,2,3,6,7,8,9,10,11,12,24–28) and `include/shared/Config.h`
-  (`ENCODER_PINS_ACTIVE {2,3,4,5,6,9,10,11}`, `NUM_ENCODERS_ACTIVE 4`). One is stale.
-  Pick the truth, update both + `hardware/` before any encoder work.
-- **G-P2** — NeoTrellis link is doubly specified: I2C (`0x2E`/`0x2F`, this build +
-  `hardware/`) vs bit-banged UART on the M4's I2C pads (`UART_CONNECTIONS.md`,
-  `Config.h` `UART_RX_PIN 21`). Decide and delete the losing path.
-- **G-P3** — Two `Config.h` (`include/Config.h` and `include/shared/Config.h`) and two
-  `include/*` trees; confirm which is authoritative and drop the duplicate.
+- ✅ **G-P1 (RESOLVED 2026-07-16, Block 0)** — Single conflict-free pin map now in
+  [`apps/processor/PIN_MAP.md`](apps/processor/PIN_MAP.md), mirrored in `Config.h`.
+  Encoders `{2,3,4,5,6,7,8,9}` + expansion `{10,11,12,26,27,28,29,30}`, avoiding Serial1
+  (0/1), I2C (18/19), faders (14–17), piezo/IR (20–25). Compiles (`teensy41 SUCCESS`).
+- ✅ **G-P2 (RESOLVED, Block 0)** — NeoTrellis link = **I2C** (`0x2E/0x2F`, authoritative);
+  UART-M4 path marked deprecated in `Config.h`/`PIN_MAP.md`. _Follow-up_: delete the
+  `neotrellis_m4` env + dead UART code in a later cleanup task.
+- ✅ **G-P3 (RESOLVED, Block 0)** — Removed the orphan `include/Config.h` (dead, nothing
+  included it, held contradictory values). `include/shared/Config.h` is authoritative.
 
 **Missing (for the new specs)**
 - **G-P4 (urgent)** — No **JSON-lines UART** to the RPi (R-PROC-3). The current

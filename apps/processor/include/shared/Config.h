@@ -9,7 +9,8 @@
 // Physical NeoTrellis mapping (8x4 orientation)
 #define Y_DIM GRID_SCENES // 4 rows (scenes)
 #define X_DIM GRID_TRACKS // 8 columns (tracks)
-#define I2C_START_ADDR 0x2E // Starting I2C address for NeoTrellis boards
+#define I2C_START_ADDR 0x2E // NeoTrellis boards (Seesaw, I2C) — authoritative pad link
+// I2C bus = default Wire on Teensy 4.1: SDA=pin 18, SCL=pin 19 (4.7k pull-ups). See PIN_MAP.md.
 
 // === MIDI CONFIGURATION ===
 #define SYSEX_START 0xF0
@@ -19,6 +20,7 @@
 
 // === LED BRIGHTNESS ===
 #define LED_BRIGHTNESS 100 // 0-255
+#define NEOPIXEL_PIN 33    // WS2812B data (via 3.3->5V level shifter, 330R series). See PIN_MAP.md.
 
 // === COLORS (RGB values) ===
 #define COLOR_EMPTY 0x202020     // Dim white
@@ -36,10 +38,11 @@
 #define UART_PING_INTERVAL_MS 30000     // Send PING every 30 seconds
 #define UART_LINK_TIMEOUT_MS 90000      // Consider link down after 90 seconds without RX
 
-// === NEOTRELLIS M4 UART PINS (Using I2C jumper pins - ONLY available pins) ===
-// NeoTrellis M4 only exposes I2C pins through jumper pads
-#define UART_RX_PIN 21  // SDA pin (Pin 21) - only available pin for RX
-#define UART_TX_PIN 22  // SCL pin (Pin 22) - only available pin for TX
+// === NEOTRELLIS M4 UART PINS — DEPRECATED (parked, see PIN_MAP.md / gap G-P2) ===
+// This build uses the I2C NeoTrellis (0x2E/0x2F). The NeoTrellis M4 + bit-banged UART
+// path below is NOT wired; kept only so the neotrellis_m4 env still compiles.
+#define UART_RX_PIN 21  // [deprecated] M4 SDA jumper pad
+#define UART_TX_PIN 22  // [deprecated] M4 SCL jumper pad
 
 // === ABLETON INTEGRATION ===
 #define ABLETON_MIDI_CHANNEL 1
@@ -55,13 +58,14 @@
 #define FADER_PICKUP_THRESHOLD 3       // ±3 MIDI units for pickup mode (2.4% tolerance)
 
 // === ENCODERS CONFIGURATION (Teensy only) ===
-#define NUM_ENCODERS_ACTIVE 4          // Currently connected encoders
-#define NUM_ENCODERS_MAX 8             // Maximum encoders supported (future expansion)
+// Authoritative map: see PIN_MAP.md. Conflict-free vs Serial1 (0/1), I2C (18/19),
+// faders (14-17), piezo/IR (20-25), LED (13). Encoder switches are on MCP23017 0x20.
+#define NUM_ENCODERS_ACTIVE 4          // Currently wired encoders (build up to 8)
+#define NUM_ENCODERS_MAX 8             // Maximum encoders supported
 // Format: {Enc1_A, Enc1_B, Enc2_A, Enc2_B, Enc3_A, Enc3_B, Enc4_A, Enc4_B}
-// CORRECTED: Pin 6-9 (not 6-7)
-#define ENCODER_PINS_ACTIVE {2, 3, 4, 5, 6, 9, 10, 11}
-// Future expansion pins for encoders 5-8 (when added)
-#define ENCODER_PINS_EXPANSION {12, 28, 24, 25, 26, 27, 33, 34}
+#define ENCODER_PINS_ACTIVE {2, 3, 4, 5, 6, 7, 8, 9}
+// Encoders 5-8 (Enc5_A,B ... Enc8_A,B)
+#define ENCODER_PINS_EXPANSION {10, 11, 12, 26, 27, 28, 29, 30}
 
 // === MCP23017 I/O EXPANDER CONFIGURATION (Teensy only) ===
 #define MCP_ENCODER_BUTTONS_ADDR 0x20  // MCP23017 #1: 4 encoder buttons
