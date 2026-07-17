@@ -72,8 +72,8 @@ void ButtonManager::initializeMappings() {
     mappings[mappingCount++] = {1, 1, ButtonID::STOP, true};
     mappings[mappingCount++] = {1, 2, ButtonID::RECORD, true};
     mappings[mappingCount++] = {1, 3, ButtonID::LOOP, true};
-    mappings[mappingCount++] = {1, 4, ButtonID::BANK_LEFT, true};   // free/planned
-    mappings[mappingCount++] = {1, 5, ButtonID::BANK_RIGHT, true};  // free/planned
+    mappings[mappingCount++] = {1, 4, ButtonID::UNDO, true};        // was BANK_LEFT — reassigned 2026-07-17
+    mappings[mappingCount++] = {1, 5, ButtonID::BANK_RIGHT, true};  // still free/unassigned
     mappings[mappingCount++] = {1, 6, ButtonID::SHIFT, true};       // free/planned
     mappings[mappingCount++] = {1, 8, ButtonID::METRONOME, true};   // GPB0, NOT pin 7 (erratum)
 }
@@ -174,13 +174,14 @@ void ButtonManager::handleButtonChange(ButtonID id, bool pressed) {
     // Transport buttons
     if (id == ButtonID::PLAY || id == ButtonID::STOP ||
         id == ButtonID::RECORD || id == ButtonID::LOOP ||
-        id == ButtonID::METRONOME) {
+        id == ButtonID::METRONOME || id == ButtonID::UNDO) {
 
         const char* name =
             id == ButtonID::PLAY ? "PLAY" :
             id == ButtonID::STOP ? "STOP" :
             id == ButtonID::RECORD ? "RECORD" :
-            id == ButtonID::LOOP ? "LOOP" : "METRONOME";
+            id == ButtonID::LOOP ? "LOOP" :
+            id == ButtonID::UNDO ? "UNDO" : "METRONOME";
 
         Serial.printf("Transport: %s\n", name);
 

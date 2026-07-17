@@ -14,17 +14,16 @@ enum class ButtonID : uint8_t {
     ENC_3,      // GPA2
     ENC_4,      // GPA3
 
-    // Extra function buttons (MCP #2 @ 0x21) — PLAY/STOP/RECORD/LOOP populated in
-    // Phase 1; BANK_LEFT/BANK_RIGHT/SHIFT/METRONOME are wired-and-free (add a button
-    // later, no rework)
+    // Extra function buttons (MCP #2 @ 0x21) — PLAY/STOP/RECORD/LOOP/SHIFT/METRONOME/UNDO
+    // populated in Phase 1 (all 8 pushbuttons). GPA5 (BANK_RIGHT) still unassigned/free.
     PLAY = 10,      // GPA0
     STOP,           // GPA1
     RECORD,         // GPA2
     LOOP,           // GPA3
-    BANK_LEFT,      // GPA4 — Navigate track/param banks left
-    BANK_RIGHT,     // GPA5 — Navigate track/param banks right
+    BANK_LEFT,      // enum value unused — pin GPA4 reassigned to UNDO, see below
+    BANK_RIGHT,     // GPA5 — wired, unassigned/free (was bank nav; disabled, grid shows all 8 tracks)
     SHIFT,          // GPA6
-    METRONOME,      // GPB0 (not GPA7 — erratum)
+    METRONOME,      // GPB0 (not GPA7 — erratum). Currently repurposed to mixer-mode toggle.
 
     // Encoders 5-8 (MCP #1)
     ENC_5 = 4,  // GPA4
@@ -33,11 +32,13 @@ enum class ButtonID : uint8_t {
     ENC_8 = 8,  // GPB0 (not GPA7 — erratum)
 
     // Reserved for future buttons (would need a 3rd MCP or PCB rework — both chips are
-    // at their 8-pin-wired capacity; 14/chip is the theoretical max, see PIN_MAP.md)
+    // at their 8-pin-wired capacity; 14/chip is the theoretical max, see PIN_MAP.md).
+    // Deliberately kept off hardware buttons — these live on the touchscreen/soft-key
+    // bar instead (encoder-first, touch-second UX; see specs/openspec/gui.md).
     DELETE = 20,
     DUPLICATE,
     QUANTIZE,
-    UNDO,
+    UNDO,   // Exception: mapped to a physical MCP #2 pin (GPA4) — see initializeMappings()
     REDO,
     // ... more future buttons
 };

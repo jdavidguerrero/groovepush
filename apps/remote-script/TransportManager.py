@@ -484,10 +484,21 @@ class TransportManager:
                 self.c_surface.log_message("🔙 Back to arrangement triggered")
             else:
                 self.c_surface.log_message("ℹ️ back_to_arrangement not available (requires Live 9.0+)")
-            
+
         except Exception as e:
             self.c_surface.log_message(f"❌ Error triggering back to arrangement: {e}")
-    
+
+    def trigger_undo(self):
+        """Undo the last action in Live (hardware UNDO button)"""
+        try:
+            if self.song.can_undo:
+                self.song.undo()
+                self.c_surface.log_message("↩️ Undo triggered")
+            else:
+                self.c_surface.log_message("ℹ️ Nothing to undo")
+        except Exception as e:
+            self.c_surface.log_message(f"❌ Error triggering undo: {e}")
+
     # ========================================
     # UTILITY METHODS
     # ========================================
@@ -588,6 +599,8 @@ class TransportManager:
                     self.quantize_selected_clip()
             elif command == CMD_NUDGE:
                 self.handle_nudge_command(payload)
+            elif command == CMD_UNDO:
+                self.trigger_undo()
             else:
                 self.c_surface.log_message(f"❓ Unknown transport command: 0x{command:02X}")
                 

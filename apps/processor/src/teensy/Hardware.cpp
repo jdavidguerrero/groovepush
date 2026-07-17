@@ -116,6 +116,7 @@ void handleTransportPress(ButtonID id) {
         }
         case ButtonID::RECORD:  liveController.sendSysExToAbleton(CMD_TRANSPORT_RECORD, nullptr, 0); break;
         case ButtonID::LOOP:    liveController.sendSysExToAbleton(CMD_TRANSPORT_LOOP, nullptr, 0); break;
+        case ButtonID::UNDO:    liveController.sendSysExToAbleton(CMD_UNDO, nullptr, 0); break;
         case ButtonID::METRONOME: handleMixerModeChange(); break;
         default: break;
     }

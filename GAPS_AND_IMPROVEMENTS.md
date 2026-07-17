@@ -69,6 +69,15 @@ extend, not throw away.
   now `8` — matches the 8 physical encoders and the schematic) and enabled all 8 encoder
   button mappings (`ENC_5..ENC_8` were `false`, now `true`, since the user confirmed EC11
   encoders with integrated switches).
+- ✅ **G-P13 (RESOLVED 2026-07-17)** — Physical **UNDO** button added (MCP #2, was the
+  unused BANK_LEFT slot). `CMD_UNDO` (0x4D) existed as a constant in both
+  `MidiCommands.h` and `remote-script/consts.py` but had **no handler anywhere** — added
+  `TransportManager.trigger_undo()` (calls `Song.undo()`) and wired it into
+  `handle_transport_command`. One MCP #2 slot (lib pin 5) remains unassigned by user
+  choice. `METRONOME` (lib pin 8) still triggers `handleMixerModeChange()` instead of a
+  literal metronome toggle — `CMD_METRONOME`/`toggle_metronome()` already exist and work
+  end-to-end in the Remote Script, so swapping is cheap, but **not done** pending user
+  confirmation (would strand mixer-mode switching until the GUI soft-key bar exists).
 
 **Missing (for the new specs)**
 - **G-P4 (urgent)** — No **JSON-lines UART** to the RPi (R-PROC-3). The current

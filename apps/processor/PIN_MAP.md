@@ -59,13 +59,18 @@ GPB0 (1), library pin numbers 0-6 and 8 (Adafruit_MCP23X17: 0-7=GPA0-7, 8-15=GPB
 | #2 | 0x21 | 1 | STOP | ✅ populated now |
 | #2 | 0x21 | 2 | RECORD | ✅ populated now |
 | #2 | 0x21 | 3 | LOOP | ✅ populated now |
-| #2 | 0x21 | 4 | BANK_LEFT | wired, unpopulated — add later, no rework |
-| #2 | 0x21 | 5 | BANK_RIGHT | wired, unpopulated — add later, no rework |
-| #2 | 0x21 | 6 | SHIFT | wired, unpopulated — add later, no rework |
-| #2 | 0x21 | 8 | METRONOME | wired, unpopulated — add later, no rework |
+| #2 | 0x21 | 4 | UNDO | ✅ populated now — sends `CMD_UNDO` (0x4D) → `Song.undo()` |
+| #2 | 0x21 | 5 | _(sin asignar)_ | wired, unpopulated — decidir función después, sin rework |
+| #2 | 0x21 | 6 | SHIFT | ✅ populated now |
+| #2 | 0x21 | 8 | METRONOME | ✅ populated now — **hoy reasignado** a cambio de modo mixer, no es click de metrónomo literal (pendiente de decisión, ver `GAPS_AND_IMPROVEMENTS.md`) |
 
-**Physical pushbuttons to buy now: 4** (Play/Stop/Record/Loop only — encoder switches are
-built into the EC11s, no separate part). See `lib/ButtonManager/ButtonManager.cpp`.
+**Physical pushbuttons to buy: 7** (Play/Stop/Record/Loop/Undo/Shift/Metronome — encoder
+switches are built into the EC11s, no separate part; 1 slot on MCP #2 still free).
+See `lib/ButtonManager/ButtonManager.cpp`.
+
+Botones "de pantalla" (Push real los tiene físicos, aquí van táctiles para mantener el
+tamaño reducido): Delete, Duplicate, Quantize, Redo, Add Track/Device, Octave, Scale,
+Layout, Session/Note toggle. Ver soft-key bar en `specs/push-controller-gui-design.md`.
 
 ## Analog (12-bit ADC)
 | Function | Analog | Teensy pin | Status |
