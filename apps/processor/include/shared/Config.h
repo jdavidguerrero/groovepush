@@ -68,11 +68,14 @@
 #define ENCODER_PINS_EXPANSION {10, 11, 12, 26, 27, 28, 29, 30}
 
 // === MCP23017 I/O EXPANDER CONFIGURATION (Teensy only) ===
-#define MCP_ENCODER_BUTTONS_ADDR 0x20  // MCP23017 #1: 4 encoder buttons
-#define MCP_EXTRA_BUTTONS_ADDR 0x21    // MCP23017 #2: 8 extra buttons
-#define NUM_ENCODER_BUTTONS 4          // Buttons on first MCP23017
-#define NUM_EXTRA_BUTTONS 8            // Buttons on second MCP23017
-#define TOTAL_MCP_BUTTONS (NUM_ENCODER_BUTTONS + NUM_EXTRA_BUTTONS)  // 12 total
+// Capacity: 16 GPIO/chip, but GPA7/GPB7 are output-only (erratum) -> 14 usable inputs/chip
+// max. This build wires 8 pins/chip (GPA0-6 + GPB0), matching hardware/processor.kicad_sch
+// exactly (verified via KiCad net lister 2026-07-16). See PIN_MAP.md.
+#define MCP_ENCODER_BUTTONS_ADDR 0x20  // MCP23017 #1: encoder push-switches (EC11 integrated)
+#define MCP_EXTRA_BUTTONS_ADDR 0x21    // MCP23017 #2: transport/extra buttons
+#define NUM_ENCODER_BUTTONS 8          // 1:1 with the 8 encoders (was wrongly 4 - fixed)
+#define NUM_EXTRA_BUTTONS 8            // 4 populated now (Play/Stop/Record/Loop), 4 free
+#define TOTAL_MCP_BUTTONS (NUM_ENCODER_BUTTONS + NUM_EXTRA_BUTTONS)  // 16 total wired
 
 // === BUTTON DEBOUNCE ===
 #define BUTTON_DEBOUNCE_MS 50

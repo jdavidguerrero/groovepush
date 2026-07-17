@@ -4,36 +4,42 @@
 #include "shared/Config.h"
 
 // Enumeración de botones lógicos
+// Pin allocation matches hardware/processor.kicad_sch exactly (verified via KiCad net
+// lister): each MCP23017 uses GPA0-6 + GPB0 (8 usable inputs), never GPA7/GPB7
+// (output-only erratum). See PIN_MAP.md and specs/openspec/processor.md.
 enum class ButtonID : uint8_t {
-    // Encoder push buttons (MCP #1 @ 0x20, GPA0-GPA3)
-    ENC_1 = 0,
-    ENC_2,
-    ENC_3,
-    ENC_4,
+    // Encoder push buttons (MCP #1 @ 0x20) — all 8 wired, 1:1 with the 8 encoders
+    ENC_1 = 0,  // GPA0
+    ENC_2,      // GPA1
+    ENC_3,      // GPA2
+    ENC_4,      // GPA3
 
-    // Extra function buttons (MCP #2 @ 0x21, GPA0-GPA7)
-    PLAY = 10,
-    STOP,
-    RECORD,
-    LOOP,
-    BANK_LEFT,     // Navigate track/param banks left
-    BANK_RIGHT,    // Navigate track/param banks right
-    SHIFT,
-    METRONOME,
+    // Extra function buttons (MCP #2 @ 0x21) — PLAY/STOP/RECORD/LOOP populated in
+    // Phase 1; BANK_LEFT/BANK_RIGHT/SHIFT/METRONOME are wired-and-free (add a button
+    // later, no rework)
+    PLAY = 10,      // GPA0
+    STOP,           // GPA1
+    RECORD,         // GPA2
+    LOOP,           // GPA3
+    BANK_LEFT,      // GPA4 — Navigate track/param banks left
+    BANK_RIGHT,     // GPA5 — Navigate track/param banks right
+    SHIFT,          // GPA6
+    METRONOME,      // GPB0 (not GPA7 — erratum)
 
-    // Reservado para expansión futura (4 encoders adicionales)
-    ENC_5 = 4,  // MCP #1, GPA4 (futuro)
-    ENC_6,      // MCP #1, GPA5
-    ENC_7,      // MCP #1, GPA6
-    ENC_8,      // MCP #1, GPA7
+    // Encoders 5-8 (MCP #1)
+    ENC_5 = 4,  // GPA4
+    ENC_6,      // GPA5
+    ENC_7,      // GPA6
+    ENC_8 = 8,  // GPB0 (not GPA7 — erratum)
 
-    // Botones extra futuros (MCP #2, GPB0-GPB7)
+    // Reserved for future buttons (would need a 3rd MCP or PCB rework — both chips are
+    // at their 8-pin-wired capacity; 14/chip is the theoretical max, see PIN_MAP.md)
     DELETE = 20,
     DUPLICATE,
     QUANTIZE,
     UNDO,
     REDO,
-    // ... más botones futuros
+    // ... more future buttons
 };
 
 struct ButtonMapping {

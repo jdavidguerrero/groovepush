@@ -48,27 +48,34 @@ void ButtonManager::begin() {
 void ButtonManager::initializeMappings() {
     mappingCount = 0;
 
-    // MCP #1 (0x20): Encoder buttons on GPA0-GPA3
+    // Adafruit_MCP23X17 pin numbering: 0-7 = GPA0-7, 8-15 = GPB0-7.
+    // GPA7 (pin 7) and GPB7 (pin 15) are OUTPUT-ONLY on the MCP23017 (silicon erratum) —
+    // never map a button to them. This matches hardware/processor.kicad_sch exactly
+    // (verified via KiCad net lister): each MCP uses GPA0-6 (pins 0-6) + GPB0 (pin 8),
+    // 8 usable inputs per chip, pin 7/15 skipped.
+
+    // MCP #1 (0x20): 8 encoder push-switches (EC11 integrated switch), 1:1 with 8 encoders
     mappings[mappingCount++] = {0, 0, ButtonID::ENC_1, true};
     mappings[mappingCount++] = {0, 1, ButtonID::ENC_2, true};
     mappings[mappingCount++] = {0, 2, ButtonID::ENC_3, true};
     mappings[mappingCount++] = {0, 3, ButtonID::ENC_4, true};
+    mappings[mappingCount++] = {0, 4, ButtonID::ENC_5, true};
+    mappings[mappingCount++] = {0, 5, ButtonID::ENC_6, true};
+    mappings[mappingCount++] = {0, 6, ButtonID::ENC_7, true};
+    mappings[mappingCount++] = {0, 8, ButtonID::ENC_8, true};  // GPB0, NOT pin 7 (GPA7 erratum)
 
-    // MCP #2 (0x21): Function buttons on GPA0-GPA7
+    // MCP #2 (0x21): transport buttons. Only PLAY/STOP/RECORD/LOOP are physically wired
+    // for Phase 1 (protoboard) — the rest stay enabled in firmware (MCP internal pull-up
+    // reads a safe HIGH/not-pressed on an unpopulated pin) so they work the moment a
+    // button is soldered on later. No rework needed — see specs/openspec/processor.md.
     mappings[mappingCount++] = {1, 0, ButtonID::PLAY, true};
     mappings[mappingCount++] = {1, 1, ButtonID::STOP, true};
     mappings[mappingCount++] = {1, 2, ButtonID::RECORD, true};
     mappings[mappingCount++] = {1, 3, ButtonID::LOOP, true};
-    mappings[mappingCount++] = {1, 4, ButtonID::BANK_LEFT, true};
-    mappings[mappingCount++] = {1, 5, ButtonID::BANK_RIGHT, true};
-    mappings[mappingCount++] = {1, 6, ButtonID::SHIFT, true};
-    mappings[mappingCount++] = {1, 7, ButtonID::METRONOME, true};
-
-    // Futuro: Encoders 5-8 en MCP #1, GPA4-GPA7 (actualmente disabled)
-    mappings[mappingCount++] = {0, 4, ButtonID::ENC_5, false};
-    mappings[mappingCount++] = {0, 5, ButtonID::ENC_6, false};
-    mappings[mappingCount++] = {0, 6, ButtonID::ENC_7, false};
-    mappings[mappingCount++] = {0, 7, ButtonID::ENC_8, false};
+    mappings[mappingCount++] = {1, 4, ButtonID::BANK_LEFT, true};   // free/planned
+    mappings[mappingCount++] = {1, 5, ButtonID::BANK_RIGHT, true};  // free/planned
+    mappings[mappingCount++] = {1, 6, ButtonID::SHIFT, true};       // free/planned
+    mappings[mappingCount++] = {1, 8, ButtonID::METRONOME, true};   // GPB0, NOT pin 7 (erratum)
 }
 
 void ButtonManager::update() {

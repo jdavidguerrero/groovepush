@@ -93,9 +93,15 @@ manda una nota que Ableton escucha.
 - **Gancho**: "El truco que usan Push y todos los controladores serios."
 
 ### Block 4 — I2C y expansores GPIO (MCP23017)
-**Objetivo**: botones vía 2× MCP23017 (0x20/0x21) con debounce.
+**Objetivo**: switches de encoder (8, uno por encoder) + botones de transporte (4:
+Play/Stop/Record/Loop, con 4 más ya cableados y libres) vía 2× MCP23017 (0x20/0x21).
 **Depende de**: B3 · **Spec**: R-PROC-9 · **Reusa**: `env:test_mcp_encoder_buttons_teensy`, `env:test_mcp_extra_buttons_teensy`, `lib/ButtonManager`
+**BOM confirmado**: 0 pulsadores extra para encoders (switch integrado EC11), **4 pulsadores
+táctiles** para transporte. Asignación exacta en `apps/processor/PIN_MAP.md`.
 
+- [x] T-B4-0 (firmware) — Reconciliar asignación de pines MCP: evitar GPA7/GPB7 (solo-salida,
+  erratum), usar lib pins 0-6+8 por chip. **Verifica**: coincide con `hardware/processor.kicad_sch`
+  (net lister); `NUM_ENCODER_BUTTONS` = 8. — hecho 2026-07-16 (gap G-P12).
 - [ ] T-B4-1 (firmware) — Escanear MCP por I2C, debounce `BUTTON_DEBOUNCE_MS`. **Verifica**:
   `pio run -e test_mcp_extra_buttons_teensy`, cada botón imprime press/release limpio.
 - [ ] T-B4-2 (hardware) — Pull-ups I2C 4.7k y direcciones A0/A1/A2. **Verifica**: `i2c scan`
@@ -107,37 +113,38 @@ manda una nota que Ableton escucha.
 - **Video**: construcción (MCP en protoboard) + escaneo I2C + código de matriz de botones.
 - **Gancho**: "12 botones con solo 2 cables de datos."
 
-### Block 5 — Sensores analógicos: piezo (velocity) e IR (theremin)
-**Objetivo**: 4 piezos → notas con velocity; 2 IR Sharp → CC.
-**Depende de**: B4 · **Spec**: R-PROC-2 · **Reusa**: `lib/Piezo`, `lib/Theremin`
+### Block 5 — ❌ REMOVIDO del alcance de GroovePush (2026-07-16)
+**Piezos e IR/theremin ya no son parte de este dispositivo.** Decisión del usuario: se
+construirán como un **módulo e-drum separado** en el futuro (proyecto aparte, reusando
+`lib/Piezo`/`lib/Theremin` como punto de partida cuando llegue ese momento). No se compran
+piezos ni sensores IR para GroovePush; `Piezo.cpp`/`Theremin.cpp` quedan en el árbol pero
+comentados en `Hardware.cpp` (gap G-P11, ver `GAPS_AND_IMPROVEMENTS.md`).
 
-- [ ] T-B5-1 (firmware) — Detección de golpe piezo + curva de velocity + bleed 1MΩ.
-  **Verifica**: golpe suave/fuerte → velocity distinta; sin dobles disparos.
-- [ ] T-B5-2 (firmware) — IR → CC 20/21 con rango calibrado. **Verifica**: mano cerca/lejos
-  barre un CC en Ableton.
-- [ ] T-B5-3 (hardware) — Confirmar IR compatible con 3.3V o divisor (G-H4). **Verifica**:
-  salida IR ≤ 3.3V en el ADC.
+_Idea de contenido reutilizable para el futuro proyecto e-drum_: "Piezos y velocity: cómo
+un pad siente la fuerza" — piezoeléctricos, pico de voltaje, ventana de detección,
+protección (bleed + clamp); sensores IR de distancia como controlador gestual.
 
-**🎬 Contenido — "Piezos y velocity: cómo un pad siente la fuerza"**
-- **Tema**: piezoeléctricos, pico de voltaje, ventana de detección, protección (bleed +
-  clamp); sensores IR de distancia como controlador gestual.
-- **Video**: construcción de un drum-pad piezo + código de detección + demo "theremin".
-- **Gancho**: "Convierte un golpe en música (y por qué el resistor de 1M importa)."
-
-### Block 6 — El grid de pads (NeoTrellis, RGB, level shifting)
-**Objetivo**: grid 8×4 → notas; feedback LED con semántica teal/purple.
-**Depende de**: B5 · **Gaps**: G-P2, G-P7 · **Spec**: R-PROC-1, R-PROC-4
+### Block 6 — El grid de pads (NeoTrellis) — protoboard; LEDs diferidas a PCB
+**Objetivo (Fase 1, protoboard)**: grid 8×4 → notas vía I2C. **El feedback RGB propio del
+grid del NeoTrellis** (cada pad ya trae su LED, viene con el módulo) sigue funcionando
+normal. Lo que se difiere es la **tira WS2812B externa** (encoders/faders/botones) — los
+LEDs que tienes son SMD, no aptos para protoboard; se monta cuando pasemos a PCB.
+**Depende de**: B4 · **Gaps**: G-P2 (resuelto) · **Spec**: R-PROC-1
 
 - [ ] T-B6-1 (firmware) — Leer pads NeoTrellis por I2C y emitir notas. **Verifica**: pad →
   nota en Ableton, 8×4 mapeado.
-- [ ] T-B6-2 (firmware) — Render de frames LED desde el enlace + level shifter para tira
-  WS2812B. **Verifica**: color por estado; tira de 28 LEDs enciende sin glitches.
+- [ ] T-B6-2 (firmware) — Feedback de color nativo del NeoTrellis por estado (clip
+  vacío/cargado/reproduciendo). **Verifica**: color correcto por pad sin la tira externa.
 
-**🎬 Contenido — "Grid de pads RGB: NeoTrellis y WS2812B"**
-- **Tema**: matriz de pads, direccionamiento I2C del NeoTrellis, LEDs direccionables
-  WS2812B, por qué hace falta level-shift 3.3→5V y un cap de bulk.
-- **Video**: construcción del grid + código de color + el "sweep" de feedback.
-- **Gancho**: "El grid que responde a lo que tocas — y a la IA."
+**🎬 Contenido — "Grid de pads RGB: NeoTrellis por I2C"**
+- **Tema**: matriz de pads, direccionamiento I2C del NeoTrellis (Seesaw), feedback RGB
+  nativo por pad.
+- **Video**: construcción del grid + código de color + trigger de clips.
+- **Gancho**: "El grid que responde a lo que tocas."
+
+> **T-B6-3 (diferido a PCB)** — Render de frames LED + level shifter para tira WS2812B
+> externa (28 LEDs, encoders/botones/faders). Ver `hardware/leds.kicad_sch` (ya diseñado
+> en Fase 3) — se monta cuando el PCB esté fabricado, no en protoboard.
 
 ---
 

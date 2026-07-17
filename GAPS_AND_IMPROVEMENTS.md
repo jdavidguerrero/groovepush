@@ -54,6 +54,21 @@ extend, not throw away.
   `neotrellis_m4` env + dead UART code in a later cleanup task.
 - ✅ **G-P3 (RESOLVED, Block 0)** — Removed the orphan `include/Config.h` (dead, nothing
   included it, held contradictory values). `include/shared/Config.h` is authoritative.
+- ✅ **G-P11 (RESOLVED 2026-07-16, Block 0 scope narrowing)** — Phase 1 protoboard scope
+  reduced by the user: **piezo, IR/theremin, and capacitive touch buttons are removed**
+  from this device (piezo/IR become a future standalone e-drum module; capacitive buttons
+  are replaced by MCP23017 pushbuttons). `Piezo.cpp`/`Theremin.cpp`/`CapButtons.cpp` stay
+  in the tree but remain commented out in `Hardware.cpp`; their undefined pin macros
+  (`PIEZO_PINS`, `IR_PINS`, `CAPACITIVE_PINS`) are a non-issue now since nothing includes
+  them. Revisit only if a future e-drum module reuses this codebase.
+- ✅ **G-P12 (RESOLVED 2026-07-16, Block 0)** — **Bug found and fixed**: `ButtonManager.cpp`
+  mapped `METRONOME` (MCP #2) and the disabled `ENC_8` (MCP #1) to **library pin 7**
+  (GPA7) — the MCP23017's output-only erratum pin, which cannot reliably read as a button
+  input. Fixed to use library pin 8 (GPB0) instead, matching `hardware/processor.kicad_sch`
+  exactly (verified via the KiCad net lister). Also fixed `NUM_ENCODER_BUTTONS` (was `4`,
+  now `8` — matches the 8 physical encoders and the schematic) and enabled all 8 encoder
+  button mappings (`ENC_5..ENC_8` were `false`, now `true`, since the user confirmed EC11
+  encoders with integrated switches).
 
 **Missing (for the new specs)**
 - **G-P4 (urgent)** — No **JSON-lines UART** to the RPi (R-PROC-3). The current
