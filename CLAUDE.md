@@ -39,6 +39,15 @@ Teensy 4.1 ──USB-MIDI (class-compliant, <5ms)──▶ Ableton Live
 4. **Audio never leaves the machine.** The hardware only ever sees the ~30 numerical
    features the plugin already extracts.
 
+**Future direction (not yet implemented — see [`specs/adr/0002-dual-mode-standalone-direction.md`](specs/adr/0002-dual-mode-standalone-direction.md))**:
+a second **Standalone mode** is planned, where the device works without a host computer.
+The RPi5 will host the local sequencer/pattern engine (not the Teensy) and gains audio I/O
+via RaspiAudio HATs (Audio+V2 for output now in the BOM; Mic+ for input planned). Do not
+design against this — but it is **direction only**, not yet a spec; the mode-switch
+mechanism, the standalone engine ownership, and how this interacts with principle 4 above
+are explicitly undecided. All specs in this repo today describe **Push Controller mode**
+only.
+
 In-repo & related components:
 - Ableton **Remote Script** (LOM, Python) now lives at `apps/remote-script`. It is
   **deployed** to `~/Music/Ableton/User Library/Remote Scripts/PushClone` (the live

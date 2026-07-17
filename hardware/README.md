@@ -75,6 +75,16 @@ own PCB. The inter-board wiring is the **connector contract** in the table below
 | J18 | 1×3 | To LED strip | +5V, DATA, GND |
 | J19 | 1×3 | To processor | mates J7 |
 
+### Raspberry Pi 5 accessories (off-board — not on the custom PCB)
+> See [ADR-0002](../specs/adr/0002-dual-mode-standalone-direction.md) — direction only,
+> for the future **Standalone mode**. These sit on the RPi5's own 40-pin GPIO header, a
+> different physical location from the processor board above; no KiCad schematic change.
+
+| Item | Part | Notes |
+|---|---|---|
+| Audio output | RaspiAudio **Audio+ V2** | HAT DAC, I2S over 40-pin header, 112 dB SNR, 32-bit/384 kHz PCM, 3.5 mm + RCA stereo out. **Output only** (confirmed vs. manufacturer spec — no mic/line input). RPi5-compatible. **In BOM now.** |
+| Audio input | RaspiAudio **Mic+** | Planned, not yet acquired. Needed for standalone audio input and any future controller-mode "listen to other instruments" idea. **Not yet in BOM.** |
+
 ## Inter-board connector contract
 
 | Processor conn | Mates | Signals | Cable |
