@@ -1493,7 +1493,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "62ec9c55-5746-4ba2-a11a-ba3cb7683957")
 		(property "Reference" "J12"
 			(at 30.48 97.79 0)
@@ -1576,7 +1576,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "e1d9c70a-2be4-42e1-bdd9-e526b7e5359f")
 		(property "Reference" "R3"
 			(at 44.45 97.79 0)
@@ -1659,7 +1659,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "f91d29e8-825e-4398-b8d6-dc2a28167c1e")
 		(property "Reference" "J13"
 			(at 74.93 97.79 0)
@@ -1742,7 +1742,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "c2f71192-5e7f-4efe-9ba6-89a7d6bac412")
 		(property "Reference" "R4"
 			(at 90.17 97.79 0)
@@ -1825,7 +1825,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "a1fa5f19-ce3a-47cc-9661-4a05dfa667d3")
 		(property "Reference" "J14"
 			(at 119.38 97.79 0)
@@ -1908,7 +1908,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "c46a957b-5e62-417d-9156-20cbca5f77f4")
 		(property "Reference" "R5"
 			(at 134.62 97.79 0)
@@ -1991,7 +1991,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "ff436e45-c1ec-4863-9a05-f5940bead23d")
 		(property "Reference" "J15"
 			(at 165.1 97.79 0)
@@ -2074,7 +2074,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "7777eb95-75fb-454a-a42d-debac3993b33")
 		(property "Reference" "R6"
 			(at 180.34 97.79 0)
@@ -2157,7 +2157,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "63305cfc-a97b-4e96-98ea-3c65b00d2c79")
 		(property "Reference" "J16"
 			(at 39.37 147.32 0)
@@ -2243,7 +2243,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "e5d8834f-9526-47e4-a7b5-3c1d8a8ec235")
 		(property "Reference" "J17"
 			(at 90.17 147.32 0)

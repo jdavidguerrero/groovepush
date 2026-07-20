@@ -61,6 +61,13 @@ extend, not throw away.
   in the tree but remain commented out in `Hardware.cpp`; their undefined pin macros
   (`PIEZO_PINS`, `IR_PINS`, `CAPACITIVE_PINS`) are a non-issue now since nothing includes
   them. Revisit only if a future e-drum module reuses this codebase.
+  **2026-07-17**: marked DNP (Do Not Populate) in `hardware/analog.kicad_sch` too —
+  `J12-J15` (Piezo1-4 connectors), `R3-R6` (1MΩ bleed resistors), `J16/J17` (IR1/IR2
+  Sharp connectors). Symbols/wiring kept intact (not deleted) so the sheet stays valid
+  if reused for the future e-drum module; `RV1-RV4` (faders) and `J11` (shared
+  interconnect to `processor.kicad_sch`) were left populated since faders are active
+  Phase 1 hardware. Done via direct `dnp` field edits (KiCad MCP was disconnected);
+  re-run ERC once the MCP server is back to confirm nothing else needs attention.
 - ✅ **G-P12 (RESOLVED 2026-07-16, Block 0)** — **Bug found and fixed**: `ButtonManager.cpp`
   mapped `METRONOME` (MCP #2) and the disabled `ENC_8` (MCP #1) to **library pin 7**
   (GPA7) — the MCP23017's output-only erratum pin, which cannot reliably read as a button
