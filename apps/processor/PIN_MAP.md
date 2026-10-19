@@ -7,7 +7,8 @@
 
 ## Phase 1 scope (protoboard, current)
 Building **now**: NeoTrellis (I2C), 8× encoders (EC11 with integrated switch), 4× faders,
-2× MCP23017 (8 encoder switches + 4 populated transport buttons). **Not** in this phase:
+2× MCP23017 (8 encoder switches + transport/function buttons; target 28 inputs, ADR-0004).
+**Not** in this phase:
 - ❌ Piezo, IR/theremin — **removed from this device** (future standalone e-drum module).
 - ❌ Capacitive touch buttons — **removed**, replaced by MCP23017 pushbuttons.
 - ⏸️ WS2812B LED strip — **deferred to PCB** (parts on hand are SMD, not protoboard-friendly).
@@ -48,8 +49,9 @@ Encoder **push-switches** → MCP23017 `0x20` (GPA0–6 + GPB0), not Teensy GPIO
 
 ## MCP23017 button allocation (verified against `hardware/processor.kicad_sch`)
 Each MCP23017 has 16 GPIO (GPA0-7, GPB0-7), but **GPA7/GPB7 are output-only** (silicon
-erratum) → **14 usable inputs/chip max**. This build wires **8 pins/chip**: GPA0-6 (7) +
+erratum) → **14 usable inputs/chip max**. Phase 1 wires **8 pins/chip**: GPA0-6 (7) +
 GPB0 (1), library pin numbers 0-6 and 8 (Adafruit_MCP23X17: 0-7=GPA0-7, 8-15=GPB0-7).
+**ADR-0004 (2026-10-19)** fills both chips to **14/14** with GPB1-GPB6 (library pins 9-14).
 **Never use library pin 7 or 15** (GPA7/GPB7) for a button.
 
 | MCP | Addr | Pin (lib #) | Function | Phase 1 status |
@@ -60,17 +62,35 @@ GPB0 (1), library pin numbers 0-6 and 8 (Adafruit_MCP23X17: 0-7=GPA0-7, 8-15=GPB
 | #2 | 0x21 | 2 | RECORD | ✅ populated now |
 | #2 | 0x21 | 3 | LOOP | ✅ populated now |
 | #2 | 0x21 | 4 | UNDO | ✅ populated now — sends `CMD_UNDO` (0x4D) → `Song.undo()` |
-| #2 | 0x21 | 5 | _(sin asignar)_ | wired, unpopulated — decidir función después, sin rework |
+| #2 | 0x21 | 5 | NEW | assigned 2026-10-19 (ADR-0004); firmware handler pending |
 | #2 | 0x21 | 6 | SHIFT | ✅ populated now |
 | #2 | 0x21 | 8 | METRONOME | ✅ populated now — **hoy reasignado** a cambio de modo mixer, no es click de metrónomo literal (pendiente de decisión, ver `GAPS_AND_IMPROVEMENTS.md`) |
 
-**Physical pushbuttons to buy: 7** (Play/Stop/Record/Loop/Undo/Shift/Metronome — encoder
-switches are built into the EC11s, no separate part; 1 slot on MCP #2 still free).
-See `lib/ButtonManager/ButtonManager.cpp`.
+### +12 function buttons — ADR-0004 (provisional pin assignment)
+Assignment to a chip/pin is **provisional until the panel layout exists**: on the PCB each
+button goes to whichever MCP is physically closer. Functions are fixed; pins may move.
 
-Botones "de pantalla" (Push real los tiene físicos, aquí van táctiles para mantener el
-tamaño reducido): Delete, Duplicate, Quantize, Redo, Add Track/Device, Octave, Scale,
-Layout, Session/Note toggle. Ver soft-key bar en `specs/push-controller-gui-design.md`.
+| MCP | Addr | Pin (lib #) | GPIO | Function |
+|---|---|---|---|---|
+| #1 | 0x20 | 9 | GPB1 | SESSION |
+| #1 | 0x20 | 10 | GPB2 | NOTE |
+| #1 | 0x20 | 11 | GPB3 | DEVICE |
+| #1 | 0x20 | 12 | GPB4 | MIX |
+| #1 | 0x20 | 13 | GPB5 | BROWSE |
+| #1 | 0x20 | 14 | GPB6 | DELETE |
+| #2 | 0x21 | 9 | GPB1 | BANK ◀ |
+| #2 | 0x21 | 10 | GPB2 | BANK ▶ |
+| #2 | 0x21 | 11 | GPB3 | OCTAVE ▲ |
+| #2 | 0x21 | 12 | GPB4 | OCTAVE ▼ |
+| #2 | 0x21 | 13 | GPB5 | DUPLICATE |
+| #2 | 0x21 | 14 | GPB6 | QUANTIZE |
+
+**Totals:** 8 encoder switches + 20 function buttons = **28 inputs** (both chips full). A 29th
+button needs a third MCP23017 at `0x22`.
+
+**Parts:** protoboard = 20 ordinary tactile switches. PCB = 20 **Kailh Choc V2** with an
+**SK6812-MINI-E** under each key (same parts as the GrooveForge Brain PCB-K, ADR-0004).
+Encoder switches are built into the EC11s. See `lib/ButtonManager/ButtonManager.cpp`.
 
 ## Analog (12-bit ADC)
 | Function | Analog | Teensy pin | Status |

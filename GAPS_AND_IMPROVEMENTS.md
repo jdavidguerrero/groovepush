@@ -190,6 +190,28 @@ These are net-new and the bulk of the work (parent §6 phases):
 - **G-H3** — Run **ERC in KiCad 10** (no `kicad-cli` in the analysis env).
 - **G-H4** — Select a **3.3 V-compatible IR** sensor or add a divider (analog board).
 - **G-H5** — Reconcile the schematic's **I2C NeoTrellis** with firmware config (ties to G-P2).
+- ~~**G-H4**~~ — moot: IR removed from scope (G-P11). `kicad-cli` 10.0.4 now available at
+  `/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli` (unblocks G-H3).
+
+**Found in the 2026-10-19 review (7" display, Brain integration, PCB order):**
+- **G-H6 (urgent, before any PCB)** — **5 V back-feed.** `J4` (5V PWR IN) feeds the Teensy
+  `VIN`. When the Teensy's USB is also plugged into a computer or into the Brain, the two
+  supplies are tied together. Cut the Teensy's VIN–VUSB pads (or add a Schottky/ideal-diode)
+  and decide which side powers the Teensy. The Pi 5 + 7" panel can't be powered from a USB-A
+  port either (Pi 5 needs 5 V / 5 A).
+- **G-H7 (urgent)** — **There is no PCB layout yet.** `hardware/GroovePush.kicad_pcb` is empty
+  (0 footprints, 0 tracks). Only schematics exist, and they predate the 7" display, the DNP of
+  piezo/IR and ADR-0004.
+- **G-H8** — **Schematic out of date with ADR-0004**: break out GPB1–GPB6 of both MCP23017s;
+  connectors J8/J20 grow; per-key SK6812-MINI-E chain for the Choc V2 keys.
+- **G-H9** — Carrier board candidate for the shared JLCPCB order (with the GrooveForge Brain
+  boards, in ~2–3 weeks): `processor` sheet only (Teensy socket, 2× MCP23017, R1/R2, C1–C3,
+  power entry, IDC/JST connectors to the panels, Dupont header to the Pi 5), ≤ 100 × 100 mm.
+  Panel boards wait for the enclosure layout. Apply
+  `grooveforge-brain/apps/hardware/kicad/studio/docs/lecciones-para-groovepush.md` and reuse
+  its scripts (`set_lcsc.py`, `set_idc_pinout.py`, `export_fab.py`).
+- **G-X1 (cross-repo, GrooveForge Brain)** — the Brain's USB-A host (`midi_host.cpp`) only
+  receives. Needed for Brain mode feedback (ADR-0002 Rev. 1, SPEC-PROC R-PROC-11).
 
 ---
 

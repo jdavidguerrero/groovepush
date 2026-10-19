@@ -61,3 +61,44 @@ doesn't design against it, without yet fully specifying it (a lot remains open �
   Audio+V2 is in the BOM; the modular PCB work from Phase 3 is unaffected (different header).
 - Follow-up: add Mic+ to the BOM once acquired; write `SPEC-STANDALONE` before implementing
   any standalone-mode task; amend C-4's wording once the local-capture data path is specced.
+
+## Revision 1 — GrooveForge Brain as an optional sound engine (2026-10-19)
+
+**Change:** the standalone decision above stands (the Raspberry Pi 5 hosts the sequencer and
+produces audio through the RaspiAudio Audio+ V2). On top of it, when a **GrooveForge Brain**
+(`github.com/jdavidguerrero/grooveforge-brain`) is connected, sound generation can be
+**handed off to the Brain**. Without the Brain, GroovePush is still a complete standalone
+instrument.
+
+**Why:** the Brain is a dedicated Teensy 4.1 synth (Model D, Juno, OB-6, Prophet, DX7 engines,
+FX, presets) with sub-millisecond audio. It already exposes everything GroovePush needs:
+
+- A **USB-A MIDI host port** (`firmware-teensy/src/usb/midi_host.*`) — GroovePush's Teensy,
+  a class-compliant USB-MIDI device, plugs straight into it with no computer in between.
+- A **fixed CC map** for every engine parameter, identical across engines
+  (`apps/docs/variants/studio/theory/07-studio-midi-expresion.md`): e.g. CC 74/71 cutoff and
+  resonance, 73/75/70/72 amp ADSR, 102–105 filter ADSR, 20–61 oscillator and mod pages. That
+  document already names "the Push clone" as a full-panel controller for the Brain.
+
+This is not the "Teensy-hosted standalone audio" alternative rejected above: the Brain is a
+separate instrument, not GroovePush's own Teensy synthesizing.
+
+**Gaps found (2026-10-19):**
+
+1. **The Brain's USB host is receive-only.** `midi_host.cpp` never sends. Without a send path
+   GroovePush cannot show the Brain's current values (preset load, edits made on the Brain's
+   own panel). Needs a small change **in the Brain repo**: mirror the outgoing CCs it already
+   sends on `usbMIDI` to the USB-host device as well.
+2. **GroovePush needs a "Brain mode"**: device pages built from the Brain's CC map, and a
+   BRAIN view in the GUI (ADR-0003).
+3. **Clock:** with no Live to slave to, GroovePush is the clock master in standalone.
+
+**Not decided yet (added to the list above):**
+
+- **Topology of the Brain link.** Option A: GroovePush Teensy (USB device) → Brain USB-A host.
+  Pads and encoders reach the Brain directly, lowest latency, works today; sequenced notes from
+  the Pi 5 travel Pi → UART → Teensy → Brain. Option B: the Pi 5 hosts the Brain's USB device
+  port and routes MIDI (ALSA); simpler for the sequencer, but puts pads through the Pi.
+  Option A is the leading candidate.
+- How the audio output is chosen when both the Audio+ V2 and the Brain are present
+  (automatic on connect vs a setting).
