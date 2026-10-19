@@ -114,7 +114,11 @@ The pad grid is one **Adafruit NeoTrellis M4** (product 3938, 120 × 62 × 8.3 m
 firmware (`src/neotrellis_m4`, env `neotrellis_m4`), linked by UART @ 1 Mbps through the M4's
 4-pin JST port (`UART_CONNECTIONS.md`). The July note that called this path deprecated in
 favour of I2C Seesaw boards was **wrong** — those boards are not in the build (gap G-P2).
-The M4 is powered from 5 V on its USB-C; cap the 32 NeoPixels' brightness in its firmware.
+The link runs over the M4's **JST PH-4 "STEMMA I2C" port**, but as **UART** on its SDA/SCL pins, not
+the I2C protocol. The M4's **micro-USB** (native SAMD51 USB, not a UART) is used for **5 V power only**
+(power-only cable from the carrier). Cap the 32 NeoPixels' brightness in the M4 firmware.
+Connector edge: micro-USB, JST and TRRS are all on the same long edge of the M4 PCB
+(Adafruit CAD, `Adafruit-NeoTrellis-M4-PCB-and-Enclosure`): leave room for the cables there.
 
 ## Carrier connector contract (GrooveForge Brain `portadora`, used unmodified)
 Source: `grooveforge-brain/apps/hardware/kicad/studio/portadora` netlist, checked 2026-10-19.

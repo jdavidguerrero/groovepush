@@ -35,10 +35,10 @@ Misma familia que el **GrooveForge Brain · Studio** (adjunto):
 
 | Componente | Cant. | Medidas de referencia |
 |---|---|---|
-| Pantalla Waveshare 7" DSI, 1280×720, táctil capacitiva de 10 puntos | 1 | área activa ~155.0 × 87.2 mm (0.121 mm/px, calculada de 7" 16:9); contorno del módulo y bisel **verificar** |
-| Encoders ALPS EC11 con push | 8 | agujero Ø7.1 liso (buje Ø6.8, montaje del Brain); perilla Ø **verificar** con la perilla elegida |
-| Grilla de pads: **Adafruit NeoTrellis M4** (una sola placa 8×4) con 2 elastómeros de silicona 4×4 | 32 pads (8×4) | placa **120.0 × 62.0 × 8.3 mm** (Adafruit); paso de 15 mm **verificar**; alto del elastómero sobre la placa **verificar** |
-| Faders ALPS B50K | 4 | recorrido **verificar** (45 o 60 mm); ancho de ranura y cap **verificar** |
+| Pantalla Waveshare 7" DSI, 1280×720, táctil capacitiva de 10 puntos | 1 | módulo **189.32 × 120.24 mm**, esquinas R8, **14.8 mm** de espesor; área activa **155.0 × 88.0 mm** centrada (bordes 17.16 a los lados y 16.12 arriba y abajo); 0.121 mm/px. Atrás: 4 agujeros M2.5 a 140.0 mm entre sí y el patrón de la Raspberry Pi (58 × 49) |
+| Encoders ALPS EC11 con push (los mismos del Brain) | 8 | agujero Ø7.1 liso (buje Ø6.8); perilla **Ø18** (con la Ø20 del Brain la regla 6 da 26.6 mm y no pasa) |
+| Grilla de pads: **Adafruit NeoTrellis M4** (una sola placa 8×4) con 2 elastómeros de silicona 4×4 | 32 pads (8×4) | PCB **120.0 × 60.0 mm** (62 con conectores), 8.3 mm; **16 agujeros Ø2.8** (M2.5) en x = 2, 28, 32, 58, 62, 88, 92, 118 × y = 15, 45 (desde la esquina); **micro-USB, JST PH-4 y jack TRRS en el mismo borde largo**. Elastómero: botones 10 × 10 mm, paso 15 mm, 10 mm de alto, 11.5 mm en total |
+| Faders **ALPS RS6011** (serie RS60) | 4 | **recorrido 60 mm**, cuerpo **75 × 9 × 7 mm**, palanca de 15 o 20 mm según el sufijo (**verificar** en la pieza); ranura ~3 × 63 mm |
 | Teclas Kailh Choc V2 con keycap 1u y LED por tecla | 20 | cutout 14 × 14 mm con rebaje 16 × 16 × 0.8 mm (como el Brain); keycap ~18 × 17 mm |
 
 **Las 20 teclas, por grupo (la ubicación es tuya; los grupos no se mezclan):**
@@ -78,12 +78,11 @@ celdas de la GUI redistribuidas, encoders fuera del ancho de la pantalla). Expli
 
 | Pieza | Medidas de referencia | Notas |
 |---|---|---|
-| Raspberry Pi 5 + Active Cooler | 85 × 56 mm; alto con cooler **verificar** | idealmente **atornillada detrás de la pantalla**; disipa más que una Pi 3B: ventilación real, no solo ranuras |
-| RaspiAudio Audio+ V2 (HAT DAC) sobre la Pi 5 | formato HAT ~65 × 56.5 mm **verificar**; separadores y header apilable **verificar** | tiene que convivir con el Active Cooler; sus salidas (RCA y 3.5 mm) se llevan al panel trasero |
+| Raspberry Pi 5 + Active Cooler + RaspiAudio Audio+ V2 (HAT) | **~50 mm desde el vidrio de la pantalla hasta el HAT** (medido) | **atornillada detrás de la pantalla** con el patrón 58 × 49; disipa más que una Pi 3B: ventilación real, no solo ranuras. Las salidas del HAT (RCA y 3.5 mm) se llevan al panel trasero |
 | Placa portadora (reutilizada del Brain) | **97 × 100 mm**; ~20 mm de alto sobre el piso (separador + placa + zócalo + Teensy) | Teensy 4.1 en zócalo; conector de panel IDC 2×15; cable I2C desde el zócalo del Audio Shield (que en GroovePush va vacío) |
 | PCB de teclas (20 Choc V2 + LEDs + 2× MCP23017) | según layout | a −3.4 mm bajo la cara superior del aluminio, como la PCB-K del Brain |
 | PCB de encoders | según layout | a −12 mm (base de los EC11), como la PCB-A del Brain |
-| NeoTrellis M4 | 120.0 × 62.0 × 8.3 mm | sujeción propia; el elastómero asoma por el aluminio. Se alimenta por su **USB-C** (5 V) y se conecta a la portadora por UART con su puerto JST de 4 pines; trae jack TRRS propio (sin uso por ahora) |
+| NeoTrellis M4 | 120.0 × 60.0 × 8.3 mm | se atornilla por sus agujeros M2.5; el elastómero asoma por el aluminio. Se alimenta por su **micro-USB** (5 V) y se conecta a la portadora por UART con su puerto JST PH-4; trae jack TRRS (sin uso por ahora). Los tres conectores están en el mismo borde largo: ese borde necesita espacio para los cables |
 | Cable DSI | largo **verificar** | radio de curvatura amplio; no doblar en filo |
 
 ## Conectores (panel trasero o laterales)
@@ -97,6 +96,14 @@ celdas de la GUI redistribuidas, encoders fuera del ancho de la pantalla). Expli
 - **USB-A de la Pi 5** (opcional, para almacenamiento o un teclado MIDI en standalone).
 - **Agujero reservado para entrada de audio** (futuro HAT Mic+), tapado por ahora.
 - **Acceso de servicio** a la microSD y al Ethernet de la Pi (tapa o ranura).
+
+## Fabricación del cuerpo
+
+El cuerpo de PETG se imprime en una **Creality Ender 3 V3 (cama de 220 × 220 mm, 250 mm de alto)**.
+Ninguna pieza puede pasar de **210 × 210 mm** en planta (margen para el brim). Si el cuerpo no
+entra, divídelo en piezas con uniones que alineen solas (lengüeta y ranura, o pines) y tornillos
+M3 a insertos, sin que las uniones queden a la vista en el panel ni atraviesen conectores. El
+panel de aluminio se corta por CNC y no tiene ese límite.
 
 ## Reglas de validación (cada una con pasa / no pasa y el valor medido)
 
@@ -127,3 +134,5 @@ celdas de la GUI redistribuidas, encoders fuera del ancho de la pantalla). Expli
 6. **Reporte de las 13 reglas** con pasa / no pasa y el valor.
 7. **Dos renders de producto terminado** (no prototipo): vista 3/4 de frente y vista trasera.
 8. **Lista de medidas a verificar** con calibre antes de fabricar.
+9. **Despiece para impresión**: cada pieza del cuerpo con sus medidas en planta (≤ 210 × 210 mm),
+   la orientación de impresión y las uniones.
