@@ -210,6 +210,22 @@ These are net-new and the bulk of the work (parent §6 phases):
   Panel boards wait for the enclosure layout. Apply
   `grooveforge-brain/apps/hardware/kicad/studio/docs/lecciones-para-groovepush.md` and reuse
   its scripts (`set_lcsc.py`, `set_idc_pinout.py`, `export_fab.py`).
+- **G-H10 (proposal, pending confirmation)** — **Reuse the Brain's carrier board** (`portadora`,
+  97 × 100 mm) instead of designing G-H9: JLC ships ≥ 5 copies, the Brain needs 1–2. Checked
+  against its netlist (2026-10-19):
+  - Panel IDC `J5` (2×15) carries 23 Teensy GPIO: 2–5, 9–17, 22, 24, 26, 30–32, 34, 35, 40, 41
+    + LED_DIN (pin 28, buffered) + 5 V / 3.3 V / GND. Enough for 4 faders on 14–17 (A0–A3, same
+    as today) + 16 encoder A/B pins + 3 spare (13, 40, 41). **Encoder pins move** → `PIN_MAP.md`
+    and `Config.h` change.
+  - **I2C 18/19 is not on `J5`**: it only reaches the Audio Shield socket `J15` (pin 6 SDA, 7 SCL,
+    12 3.3 V, 13 GND). GroovePush leaves the shield out and takes I2C from `J15` with a cable;
+    the 4.7 kΩ pull-ups go on the GroovePush side (the carrier relies on the shield's).
+  - UART to the Pi on `J6` (pins 0/1) — same as GroovePush.
+  - Solves G-H6: VUSB–VIN pads cut, USB-C power-only input, 3 A polyfuse, TVS.
+  - **Power budget:** the 3 A polyfuse can't feed a Pi 5 + 7" panel; power the Pi 5 from its own
+    supply and connect only UART + GND on `J6`. Cap LED brightness in firmware.
+  - Order the Brain carrier with **assembly quantity covering the GroovePush copy**; leave its
+    audio jacks unsoldered.
 - **G-X1 (cross-repo, GrooveForge Brain)** — the Brain's USB-A host (`midi_host.cpp`) only
   receives. Needed for Brain mode feedback (ADR-0002 Rev. 1, SPEC-PROC R-PROC-11).
 
