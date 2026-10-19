@@ -69,8 +69,11 @@ In-repo & related components:
 - **Removed from scope** (gap G-P11): piezo pads, Sharp IR "theremin", capacitive buttons —
   kept as DNP in `hardware/analog.kicad_sch` for a future e-drum module.
 - **Feedback**: per-pad RGB (NeoTrellis) + per-key LEDs and WS2812B chain (PCB phase only).
-- **Links** (firmware today): Teensy `Serial1` (0/1) ↔ NeoTrellis M4 @ 1 Mbps;
-  Teensy `Serial2` (7/8) ↔ RPi @ 115200; I2C (18/19) ↔ the two MCP23017.
+- **Links**: Teensy `Serial1` (0/1) ↔ RPi @ 115200; `Serial5` (20/21) ↔ NeoTrellis M4 @ 1 Mbps;
+  I2C (18/19) ↔ the two MCP23017. Ports are set once in `Config.h`
+  (`TEENSY_GUI_SERIAL`, `TEENSY_M4_SERIAL`).
+- **Carrier board**: the GrooveForge Brain `portadora`, used unmodified (gap G-H10); its
+  connector contract is in `PIN_MAP.md`.
 - **Sibling instrument**: GrooveForge Brain (`~/GROOVEFORGE/grooveforge-brain`) — a Teensy
   synth that GroovePush can drive over USB (its USB-A host) in standalone (ADR-0002 Rev. 1).
   Shares GroovePush's visual identity (ADR-0003).

@@ -2,10 +2,15 @@
 
 ## Pin Connections
 
+> **Updated 2026-10-19 (Brain carrier, gap G-H10):** the Teensy side moved from Serial1 (0/1)
+> to **Serial5 (TX5 = 20, RX5 = 21)**, reached through the carrier's empty Audio Shield socket
+> J15 (J15.8 = pin 20, J15.9 = pin 21). Serial1 now goes to the Raspberry Pi on J6. The M4 side
+> is unchanged. See `PIN_MAP.md`.
+
 | NeoTrellis M4 | Function | Teensy 4.1 | Function |
 |---------------|----------|------------|----------|
-| Pin 21 (SDA)  | RX       | Pin 1 (TX1)| TX       |
-| Pin 22 (SCL)  | TX       | Pin 0 (RX1)| RX       |
+| Pin 21 (SDA)  | RX       | Pin 20 (TX5)| TX      |
+| Pin 22 (SCL)  | TX       | Pin 21 (RX5)| RX      |
 | GND           | Ground   | GND        | Ground   |
 
 ## Why Use I2C Pins for UART?

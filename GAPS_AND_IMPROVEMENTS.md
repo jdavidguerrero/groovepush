@@ -53,9 +53,11 @@ extend, not throw away.
   deprecated") was **wrong**: the user's grid is a single **NeoTrellis M4**. The UART path
   (`NeoTrellisLink` on `Serial1` @ 1 Mbps, env `neotrellis_m4`, `UART_CONNECTIONS.md`) is the real
   one and stays. Docs corrected; `Config.h` comments still say "deprecated" until G-P14 lands.
-- 🐞 **G-P14 (bug, introduced in Block 0)** — encoder pins `{2,3,4,5,6,7,8,9}` put Enc3/Enc4 on
-  **7 and 8 = `Serial2`, the GUI link**. The original map `{2,3,4,5,6,9,10,11}` avoided them.
-  G-P1's "conflict-free" check assumed the RPi was on `Serial1`. Fix together with G-H10.
+- ✅ **G-P14 (FIXED 2026-10-19)** — encoder pins `{2,3,4,5,6,7,8,9}` put Enc3/Enc4 on **7 and 8 =
+  `Serial2`, the GUI link** (introduced in Block 0; the original map avoided them). Fixed by the
+  carrier re-map: encoders on J5 pins, GUI on `Serial1`, M4 on `Serial5`, ports centralised in
+  `Config.h` (`TEENSY_GUI_SERIAL` / `TEENSY_M4_SERIAL`). `teensy41`, `test_encoders_teensy` and
+  `neotrellis_m4` build.
 - ✅ **G-P3 (RESOLVED, Block 0)** — Removed the orphan `include/Config.h` (dead, nothing
   included it, held contradictory values). `include/shared/Config.h` is authoritative.
 - ✅ **G-P11 (RESOLVED 2026-07-16, Block 0 scope narrowing)** — Phase 1 protoboard scope
@@ -199,7 +201,8 @@ These are net-new and the bulk of the work (parent §6 phases):
   `/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli` (unblocks G-H3).
 
 **Found in the 2026-10-19 review (7" display, Brain integration, PCB order):**
-- **G-H6 (urgent, before any PCB)** — **5 V back-feed.** `J4` (5V PWR IN) feeds the Teensy
+- ✅ **G-H6 (resolved by G-H10)** — the Brain carrier already cuts VUSB–VIN and protects the
+  input (USB-C power-only, 3 A polyfuse, TVS). Original note: **5 V back-feed.** `J4` (5V PWR IN) feeds the Teensy
   `VIN`. When the Teensy's USB is also plugged into a computer or into the Brain, the two
   supplies are tied together. Cut the Teensy's VIN–VUSB pads (or add a Schottky/ideal-diode)
   and decide which side powers the Teensy. The Pi 5 + 7" panel can't be powered from a USB-A
@@ -215,7 +218,7 @@ These are net-new and the bulk of the work (parent §6 phases):
   Panel boards wait for the enclosure layout. Apply
   `grooveforge-brain/apps/hardware/kicad/studio/docs/lecciones-para-groovepush.md` and reuse
   its scripts (`set_lcsc.py`, `set_idc_pinout.py`, `export_fab.py`).
-- **G-H10 (proposal, pending confirmation)** — **Reuse the Brain's carrier board** (`portadora`,
+- ✅ **G-H10 (ACCEPTED 2026-10-19, carrier used unmodified)** — **Reuse the Brain's carrier board** (`portadora`,
   97 × 100 mm) instead of designing G-H9: JLC ships ≥ 5 copies, the Brain needs 1–2. Checked
   against its netlist (2026-10-19):
   - Panel IDC `J5` (2×15) carries 23 Teensy GPIO: 2–5, 9–17, 22, 24, 26, 30–32, 34, 35, 40, 41

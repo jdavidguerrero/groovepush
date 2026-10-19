@@ -3,7 +3,9 @@
 > **This file is the source of truth for pin assignments.** `include/shared/Config.h`
 > mirrors it. `PIN_DISTRIBUTION.md` is kept for power/LED/protocol notes but its old pin
 > table is **superseded here** (see Block 0 / gap G-P1, G-P2, G-P3 in `../../GAPS_AND_IMPROVEMENTS.md`).
-> Reconciled 2026-07-16 during the from-scratch rebuild. Wire the protoboard to **this** map.
+> Reconciled 2026-07-16; **re-mapped 2026-10-19 to the GrooveForge Brain carrier board**
+> (gap G-H10): every Teensy pin below reaches the outside world through that board's
+> connectors (see "Carrier connector contract"). Wire the protoboard to **this** map.
 
 ## Phase 1 scope (protoboard, current)
 Building **now**: NeoTrellis M4 (UART), 8× encoders (EC11 with integrated switch), 4× faders,
@@ -24,27 +26,28 @@ nothing is wired for these on the bench right now.
   (frees the analog pins the old map double-booked as "capacitive buttons").
 
 ## Reserved / fixed
-| Function | Teensy pin(s) | Notes |
-|---|---|---|
-| Serial1 ↔ NeoTrellis M4 | RX1 = **0**, TX1 = **1** | 1 Mbps; M4 side = its 4-pin JST port (`UART_CONNECTIONS.md`) |
-| Serial2 ↔ Raspberry Pi (GUI) | RX2 = **7**, TX2 = **8** | 115200 (`main.cpp`: `guiInterface.begin(Serial2)`) |
-| Built-in LED | **13** | status |
-| I2C `Wire` (MCP23017 ×2) | SDA = **18**, SCL = **19** | 4.7 kΩ pull-ups; A4/A5 |
-| USB | native | class-compliant USB-MIDI to the host |
+| Function | Teensy pin(s) | Carrier connector | Notes |
+|---|---|---|---|
+| Serial1 ↔ Raspberry Pi 5 (GUI) | RX1 = **0**, TX1 = **1** | J6 (2×5 Dupont) | 115200; `TEENSY_GUI_SERIAL`. Connect **UART + GND only** — the Pi 5 has its own supply |
+| Serial5 ↔ NeoTrellis M4 | TX5 = **20**, RX5 = **21** | J15 (Shield socket) | 1 Mbps; `TEENSY_M4_SERIAL`. M4 side = its 4-pin JST port (`UART_CONNECTIONS.md`) |
+| I2C `Wire` (MCP23017 ×2) | SDA = **18**, SCL = **19** | J15 (Shield socket) | 4.7 kΩ pull-ups on the GroovePush adapter (the carrier has none) |
+| LED chain data (Choc keys) | **28** | J5.26 (`LED_DIN`) | through the carrier's U1 buffer (JP1) + R3 |
+| Built-in LED | **13** | J5.18 | left free (spare) |
+| USB | native | panel-mount cable | class-compliant USB-MIDI to the host, or to the Brain's USB-A host |
 
 ## Encoders (8 × quadrature A/B)
-`ENCODER_PINS` = `{2,3, 4,5, 6,7, 8,9, 10,11, 12,26, 27,28, 29,30}`
+`ENCODER_PINS` = `{2,3, 4,5, 9,10, 11,12, 22,24, 26,30, 31,32, 34,35}` — all on the carrier's J5.
 
-| Encoder | A | B | Stage |
-|---|---|---|---|
-| Enc1 | 2 | 3 | active |
-| Enc2 | 4 | 5 | active |
-| Enc3 | 6 | 7 | active |
-| Enc4 | 8 | 9 | active |
-| Enc5 | 10 | 11 | expansion |
-| Enc6 | 12 | 26 | expansion |
-| Enc7 | 27 | 28 | expansion |
-| Enc8 | 29 | 30 | expansion |
+| Encoder | A | B | J5 pins (A / B) | Stage |
+|---|---|---|---|---|
+| Enc1 | 2 | 3 | 5 / 7 | active |
+| Enc2 | 4 | 5 | 9 / 10 | active |
+| Enc3 | 9 | 10 | 13 / 15 | active |
+| Enc4 | 11 | 12 | 17 / 19 | active |
+| Enc5 | 22 | 24 | 8 / 21 | expansion |
+| Enc6 | 26 | 30 | 23 / 25 | expansion |
+| Enc7 | 31 | 32 | 28 / 29 | expansion |
+| Enc8 | 34 | 35 | 27 / 24 | expansion |
 
 Encoder **push-switches** → MCP23017 `0x20` (GPA0–6 + GPB0), not Teensy GPIO.
 
@@ -94,37 +97,69 @@ button needs a third MCP23017 at `0x22`.
 Encoder switches are built into the EC11s. See `lib/ButtonManager/ButtonManager.cpp`.
 
 ## Analog (12-bit ADC)
-| Function | Analog | Teensy pin | Status |
-|---|---|---|---|
-| Fader 1–4 (ALPS B50K) | A0–A3 | 14, 15, 16, 17 | ✅ Phase 1 |
-| Piezo 1–4 (drum, 1 MΩ bleed) | A6–A9 | 20, 21, 22, 23 | ❌ removed (future e-drum) |
-| IR 1–2 (Sharp, theremin) | A10–A11 | 24, 25 | ❌ removed (future e-drum) |
+| Function | Analog | Teensy pin | J5 pin | Status |
+|---|---|---|---|---|
+| Fader 1–4 (ALPS B50K) | A0–A3 | 14, 15, 16, 17 | 16, 14, 12, 11 | ✅ Phase 1 |
 
-## LEDs
-| Function | Teensy pin | Notes |
-|---|---|---|
-| WS2812B NeoPixel data | **33** | via 3.3→5 V level shifter, 330 Ω series |
+Piezo and IR were removed from scope (gap G-P11).
 
 ## I2C device addresses
 | Address | Device |
 |---|---|
-| 0x20 | MCP23017 #1 — encoder switches |
-| 0x21 | MCP23017 #2 — extra/transport buttons |
+| 0x20 | MCP23017 #1 — encoder switches + 6 function buttons (INT → pin 40, optional) |
+| 0x21 | MCP23017 #2 — transport + 6 function buttons (INT → pin 41, optional) |
 
 ## Decision: NeoTrellis link = UART to the NeoTrellis M4 (corrected 2026-10-19)
-The pad grid is one **Adafruit NeoTrellis M4** (product 3938) running its own firmware
-(`src/neotrellis_m4`, env `neotrellis_m4`), linked to the Teensy on **`Serial1` @ 1 Mbps**
-through the M4's 4-pin JST port (`UART_CONNECTIONS.md`). The July note that called this path
-deprecated in favour of I2C Seesaw boards was **wrong** — those boards are not in the build.
+The pad grid is one **Adafruit NeoTrellis M4** (product 3938, 120 × 62 × 8.3 mm) running its own
+firmware (`src/neotrellis_m4`, env `neotrellis_m4`), linked by UART @ 1 Mbps through the M4's
+4-pin JST port (`UART_CONNECTIONS.md`). The July note that called this path deprecated in
+favour of I2C Seesaw boards was **wrong** — those boards are not in the build (gap G-P2).
+The M4 is powered from 5 V on its USB-C; cap the 32 NeoPixels' brightness in its firmware.
 
-> ⚠️ **Known bug (gap G-P14):** the encoder map below puts Enc3/Enc4 on pins **6·7 and 8·9**,
-> and 7/8 are `Serial2`, the GUI link. The pre-Block-0 map `{2,3,4,5,6,9,10,11}` skipped 7/8
-> on purpose. Fix pending the carrier decision (G-H10), which moves the encoders anyway.
+## Carrier connector contract (GrooveForge Brain `portadora`, used unmodified)
+Source: `grooveforge-brain/apps/hardware/kicad/studio/portadora` netlist, checked 2026-10-19.
+The Brain names (B1, ENCL_A…) are its own; GroovePush only relies on the Teensy pin numbers.
+
+**J5 — panel IDC 2×15**
+
+| J5 | Teensy | GroovePush | J5 | Teensy | GroovePush |
+|---|---|---|---|---|---|
+| 1, 2 | — | +5 V | 16 | 14 | Fader 1 (A0) |
+| 3, 4, 6 | — | GND | 17 | 11 | Enc4 A |
+| 5 | 2 | Enc1 A | 18 | 13 | spare |
+| 7 | 3 | Enc1 B | 19 | 12 | Enc4 B |
+| 8 | 22 | Enc5 A | 20 | 41 | MCP #2 INT (opt.) |
+| 9 | 4 | Enc2 A | 21 | 24 | Enc5 B |
+| 10 | 5 | Enc2 B | 22 | 40 | MCP #1 INT (opt.) |
+| 11 | 17 | Fader 4 (A3) | 23 | 26 | Enc6 A |
+| 12 | 16 | Fader 3 (A2) | 24 | 35 | Enc8 B |
+| 13 | 9 | Enc3 A | 25 | 30 | Enc6 B |
+| 14 | 15 | Fader 2 (A1) | 26 | 28 → U1 | LED_DIN |
+| 15 | 10 | Enc3 B | 27 | 34 | Enc8 A |
+| | | | 28 | 31 | Enc7 A |
+| | | | 29 | 32 | Enc7 B |
+| | | | 30 | — | +3.3 V |
+
+**J6 — Raspberry Pi (2×5)**: pin 8 = Teensy 0 (RX1), pin 10 = Teensy 1 (TX1), pins 6/9 = GND.
+Pins 2/4 carry +5 V: **leave them unconnected** in GroovePush (the Pi 5 has its own supply).
+
+**J15 / J16 — Audio Shield sockets (empty in GroovePush)**: J15.6 = SDA (18), J15.7 = SCL (19),
+J15.8 = pin 20 (TX5), J15.9 = pin 21 (RX5), J15.11 = pin 23, J15.12 = +3.3 V, J15.13 = GND;
+J16.5 = pin 8, J16.6 = pin 7, J16.14 = GND. The two rows are 15.24 mm apart (6 × 2.54), so a
+**GroovePush "shield adapter" on perfboard** plugs into both and can't sit offset: it carries the
+4.7 kΩ I2C pull-ups and keyed JST connectors to the M4 (Serial5) and the MCP board (I2C).
+Pins 7, 8 and 23 stay as spares there.
+
+**Power**: carrier USB-C (J10, power-only) → 3 A polyfuse → TVS → +5 V → Teensy VIN (the
+Teensy's VUSB–VIN pads must be **cut**, as on the Brain). Feeds Teensy, MCPs, key LEDs and
+the M4. The Pi 5 + 7" display use their own 27 W supply; grounds are joined through J6.
 
 ## Pin usage summary (no conflicts)
 ```
-0,1   Serial1 (M4)         14-17 Faders A0-A3
-2-12  Encoders 1-6A        18,19 I2C (SDA/SCL)
-7,8   Serial2 (RPi) ⚠ G-P14 13 LED   20-25 (piezo/IR removed)
-26-30 Encoders 6B-8        33    NeoPixel data
+0,1    Serial1 → Pi 5 (J6)          14-17  Faders A0-A3 (J5)
+2-5    Enc1-2 (J5)                  18,19  I2C → MCP ×2 (J15)
+9-12   Enc3-4 (J5)                  20,21  Serial5 → NeoTrellis M4 (J15)
+13     spare (onboard LED)          22,24,26,30,31,32,34,35  Enc5-8 (J5)
+28     LED chain (J5.26, buffered)  40,41  MCP INT (J5, optional)
+spare via J15/J16: 7, 8, 23         unavailable: 29 (Brain CV out, R18); 6, 25, 27, 33, 36-39 (NC)
 ```

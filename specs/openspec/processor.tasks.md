@@ -8,11 +8,14 @@
 | Task | Satisfies | Agent | Verify by | Done |
 |------|-----------|-------|-----------|:----:|
 | T-B0-1 — Reconcile encoder pin map (single conflict-free map in `PIN_MAP.md` + `Config.h`) | G-P1 / SPEC-PROC C-3 | firmware-engineer | `pio run -e teensy41` **SUCCESS** (24 s, 2026-07-16); one coherent map | ☑ |
-| T-B0-2 — Decide NeoTrellis link = I2C (0x2E/0x2F); park UART-M4 path | G-P2 | hardware-engineer | `PIN_MAP.md` + `Config.h` state I2C authoritative; UART-M4 marked deprecated | ☑ |
+| ~~T-B0-2 — Decide NeoTrellis link = I2C (0x2E/0x2F); park UART-M4 path~~ **Reversed 2026-10-19**: the grid is a NeoTrellis M4 over UART (G-P2) | G-P2 | hardware-engineer | superseded by T-B0-7 | ✗ |
 | T-B0-3 — Remove orphan `include/Config.h` (dead, contradictory values) | G-P3 | firmware-engineer | nothing includes bare `Config.h`; `pio run -e teensy41` SUCCESS | ☑ |
 | T-B0-4 — Protoboard wiring diagram + powered bench (Teensy LED blinks) | G-H(bench) | industrial-designer | photo of powered protoboard; onboard LED blink sketch runs | ☐ |
 | T-B0-5 — Narrow Phase 1 BOM/scope: drop piezo/IR/theremin (future e-drum) and capacitive buttons (replaced by MCP pushbuttons); defer LED strip to PCB | G-P11 | integration-architect | `PIN_MAP.md` "Phase 1 scope" section states it; user-confirmed | ☑ |
 | T-B0-6 — Fix MCP23017 button pin allocation (avoid GPA7/GPB7 erratum) + `NUM_ENCODER_BUTTONS` 4→8 | G-P12 | firmware-engineer | `ButtonManager.cpp`/`.h` use lib pins 0-6+8 only; matches `hardware/processor.kicad_sch` net lister output; `pio run -e teensy41` SUCCESS | ☑ |
+| T-B0-7 — Re-map to the GrooveForge Brain carrier: GUI on Serial1 (J6), NeoTrellis M4 on Serial5 (J15), encoders/faders on J5, LED data on 28; ports centralised in `Config.h`; fixes G-P14 | G-H10, G-P14 | firmware-engineer | `teensy41`, `test_encoders_teensy`, `neotrellis_m4` SUCCESS (2026-10-19); `PIN_MAP.md` J5 table matches the carrier netlist | ☑ |
+| T-B0-8 — "Shield adapter" on perfboard for J15/J16: 4.7 kΩ I2C pull-ups + keyed JST to the M4 (Serial5) and the MCP board (I2C) | G-H10 | hardware-engineer | M4 handshake + I2C scan finds 0x20/0x21 through the adapter | ☐ |
+| T-B0-9 — Order the Brain carrier with an assembly quantity that includes the GroovePush copy; cut the Teensy VUSB–VIN pads | G-H10 | user | carrier in hand, Teensy powered from J10 | ☐ |
 
 **Evidence (T-B0-1/3)**: `teensy41 SUCCESS 00:00:24` — FLASH 72976 B, RAM1 vars 22720 B.
 **Evidence (T-B0-6)**: KiCad net lister confirms `U1`/`U2` both use pins `1,21-27` (lib

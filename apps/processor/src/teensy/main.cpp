@@ -174,12 +174,12 @@ void setup() {
     Serial.println("USB MIDI to Ableton Live Integration Ready");
     Serial.println("Serial debug logging enabled (does not interfere with USB MIDI)");
     
-    // Initialize Serial1 for M4 communication
-    Serial1.begin(UART_BAUD_RATE); // UART for M4
-    Serial.print("Serial1 (UART to M4) initialized @ ");
+    // UART to the NeoTrellis M4 (Serial5: TX5=20, RX5=21, carrier socket J15)
+    TEENSY_M4_SERIAL.begin(UART_BAUD_RATE);
+    Serial.print("Serial5 (UART to M4) initialized @ ");
     Serial.print(UART_BAUD_RATE);
     Serial.print(" bps");
-    Serial.println(" (TX1=Pin 1, RX1=Pin 0)");
+    Serial.println(" (TX5=Pin 20, RX5=Pin 21)");
 
     delay(1000);
 
@@ -194,9 +194,9 @@ void setup() {
 
     if (neoTrellisLink.isConnected()) {
         Serial.println("\n=== Step 2: GUI Interface Setup ===");
-        Serial2.begin(115200);
-        Serial.println("Serial2 (GUI link) initialized @ 115200 bps");
-        guiInterface.begin(Serial2);
+        TEENSY_GUI_SERIAL.begin(GUI_BAUD_RATE);
+        Serial.println("Serial1 (GUI link, carrier J6) initialized @ 115200 bps");
+        guiInterface.begin(TEENSY_GUI_SERIAL);
         guiLinkStarted = true;
         Serial.println("GUI Interface ready — awaiting GUI handshake");
     } else {
@@ -211,9 +211,9 @@ void setup() {
 void loop() {
     if (!guiLinkStarted && neoTrellisLink.isConnected()) {
         Serial.println("Teensy: NeoTrellis ready — starting GUI link");
-        Serial2.begin(115200);
-        Serial.println("Serial2 (GUI link) initialized @ 115200 bps");
-        guiInterface.begin(Serial2);
+        TEENSY_GUI_SERIAL.begin(GUI_BAUD_RATE);
+        Serial.println("Serial1 (GUI link, carrier J6) initialized @ 115200 bps");
+        guiInterface.begin(TEENSY_GUI_SERIAL);
         guiLinkStarted = true;
     }
 

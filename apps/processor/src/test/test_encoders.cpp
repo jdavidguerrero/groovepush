@@ -44,10 +44,10 @@ const int NUM_ENCODERS = 4;
 
 // Pines de los encoders (A, B)
 const int ENCODER_PINS[NUM_ENCODERS][2] = {
-    {2, 3},    // Encoder 1
-    {4, 5},    // Encoder 2
-    {6, 9},    // Encoder 3
-    {10, 11}   // Encoder 4
+    {2, 3},    // Encoder 1 (carrier J5.5 / J5.7)
+    {4, 5},    // Encoder 2 (J5.9 / J5.10)
+    {9, 10},   // Encoder 3 (J5.13 / J5.15)
+    {11, 12}   // Encoder 4 (J5.17 / J5.19)
 };
 
 // ========== OBJETOS ENCODER ==========
@@ -219,8 +219,8 @@ void loop() {
         lastDiagTime = currentTime;
 
         // Leer estado crudo de pines del Encoder 3
-        int enc3_pinA = digitalRead(ENCODER_PINS[2][0]);  // Pin 6
-        int enc3_pinB = digitalRead(ENCODER_PINS[2][1]);  // Pin 7
+        int enc3_pinA = digitalRead(ENCODER_PINS[2][0]);  // Pin 9
+        int enc3_pinB = digitalRead(ENCODER_PINS[2][1]);  // Pin 10
 
         Serial.print("[DIAG] Encoder 3 raw: A=");
         Serial.print(enc3_pinA);

@@ -11,7 +11,7 @@ extern NeoTrellisLink neoTrellisLink;
 extern LiveController liveController;
 
 void UartHandler::begin() {
-    Serial1.begin(UART_BAUD_RATE);
+    TEENSY_M4_SERIAL.begin(UART_BAUD_RATE);
     rxIndex = 0;
     messageComplete = false;
     lastSeenMs = millis();
@@ -20,8 +20,8 @@ void UartHandler::begin() {
 }
 
 void UartHandler::read() {
-    while (Serial1.available()) {
-        uint8_t byte = Serial1.read();
+    while (TEENSY_M4_SERIAL.available()) {
+        uint8_t byte = TEENSY_M4_SERIAL.read();
         lastSeenMs = millis();
 
         if (byte == BinaryProtocol::BINARY_SYNC_BYTE) {
@@ -99,8 +99,8 @@ void UartHandler::sendToNeoTrellis(uint8_t command, uint8_t* data, int length) {
         Serial.println("Teensy: Failed to build UART frame for NeoTrellis");
         return;
     }
-    Serial1.write(buffer, frameLen);
-    Serial1.flush();
+    TEENSY_M4_SERIAL.write(buffer, frameLen);
+    TEENSY_M4_SERIAL.flush();
 }
 
 void UartHandler::processNeoTrellisMessage() {}

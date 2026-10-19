@@ -31,8 +31,8 @@ void NeoTrellisLink::sendCommand(uint8_t command, const uint8_t* data, int dataL
     );
 
     if (messageLen > 0) {
-        Serial1.write(txBuffer, messageLen);
-        Serial1.flush();
+        TEENSY_M4_SERIAL.write(txBuffer, messageLen);
+        TEENSY_M4_SERIAL.flush();
     } else {
         Serial.println("Teensy: ERROR - Failed to build binary message for NeoTrellis");
     }
@@ -40,8 +40,8 @@ void NeoTrellisLink::sendCommand(uint8_t command, const uint8_t* data, int dataL
 
 void NeoTrellisLink::sendRaw(const uint8_t* data, int length) {
     if (!data || length <= 0) return;
-    Serial1.write(data, length);
-    Serial1.flush();
+    TEENSY_M4_SERIAL.write(data, length);
+    TEENSY_M4_SERIAL.flush();
 }
 
 void NeoTrellisLink::sendDisconnectEvent() {
