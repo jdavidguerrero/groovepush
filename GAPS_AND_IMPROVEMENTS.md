@@ -49,9 +49,13 @@ extend, not throw away.
   [`apps/processor/PIN_MAP.md`](apps/processor/PIN_MAP.md), mirrored in `Config.h`.
   Encoders `{2,3,4,5,6,7,8,9}` + expansion `{10,11,12,26,27,28,29,30}`, avoiding Serial1
   (0/1), I2C (18/19), faders (14–17), piezo/IR (20–25). Compiles (`teensy41 SUCCESS`).
-- ✅ **G-P2 (RESOLVED, Block 0)** — NeoTrellis link = **I2C** (`0x2E/0x2F`, authoritative);
-  UART-M4 path marked deprecated in `Config.h`/`PIN_MAP.md`. _Follow-up_: delete the
-  `neotrellis_m4` env + dead UART code in a later cleanup task.
+- ⚠️ **G-P2 (REVERSED 2026-10-19)** — the July call ("NeoTrellis link = I2C 0x2E/0x2F, M4 UART
+  deprecated") was **wrong**: the user's grid is a single **NeoTrellis M4**. The UART path
+  (`NeoTrellisLink` on `Serial1` @ 1 Mbps, env `neotrellis_m4`, `UART_CONNECTIONS.md`) is the real
+  one and stays. Docs corrected; `Config.h` comments still say "deprecated" until G-P14 lands.
+- 🐞 **G-P14 (bug, introduced in Block 0)** — encoder pins `{2,3,4,5,6,7,8,9}` put Enc3/Enc4 on
+  **7 and 8 = `Serial2`, the GUI link**. The original map `{2,3,4,5,6,9,10,11}` avoided them.
+  G-P1's "conflict-free" check assumed the RPi was on `Serial1`. Fix together with G-H10.
 - ✅ **G-P3 (RESOLVED, Block 0)** — Removed the orphan `include/Config.h` (dead, nothing
   included it, held contradictory values). `include/shared/Config.h` is authoritative.
 - ✅ **G-P11 (RESOLVED 2026-07-16, Block 0 scope narrowing)** — Phase 1 protoboard scope
@@ -189,7 +193,8 @@ These are net-new and the bulk of the work (parent §6 phases):
 - **G-H2** — Map the **Teensy 4.1 socket** pins to the real footprint (J1 pins are logical).
 - **G-H3** — Run **ERC in KiCad 10** (no `kicad-cli` in the analysis env).
 - **G-H4** — Select a **3.3 V-compatible IR** sensor or add a divider (analog board).
-- **G-H5** — Reconcile the schematic's **I2C NeoTrellis** with firmware config (ties to G-P2).
+- **G-H5** — `processor.kicad_sch` J2 is a "NeoTrellis I2C" connector: must become a **UART**
+  connector to the NeoTrellis M4 (G-P2 reversed). Moot if the Brain carrier is adopted (G-H10).
 - ~~**G-H4**~~ — moot: IR removed from scope (G-P11). `kicad-cli` 10.0.4 now available at
   `/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli` (unblocks G-H3).
 

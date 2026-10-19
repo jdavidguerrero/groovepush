@@ -37,7 +37,7 @@ Misma familia que el **GrooveForge Brain · Studio** (adjunto):
 |---|---|---|
 | Pantalla Waveshare 7" DSI, 1280×720, táctil capacitiva de 10 puntos | 1 | área activa ~155.0 × 87.2 mm (0.121 mm/px, calculada de 7" 16:9); contorno del módulo y bisel **verificar** |
 | Encoders ALPS EC11 con push | 8 | agujero Ø7.1 liso (buje Ø6.8, montaje del Brain); perilla Ø **verificar** con la perilla elegida |
-| Grilla de pads: 2× Adafruit NeoTrellis 4×4 con elastómero de silicona, lado a lado | 32 pads (8×4) | cada placa 60 × 60 mm, paso de 15 mm **verificar**; alto del elastómero sobre la PCB **verificar** |
+| Grilla de pads: **Adafruit NeoTrellis M4** (una sola placa 8×4) con 2 elastómeros de silicona 4×4 | 32 pads (8×4) | placa **120.0 × 62.0 × 8.3 mm** (Adafruit); paso de 15 mm **verificar**; alto del elastómero sobre la placa **verificar** |
 | Faders ALPS B50K | 4 | recorrido **verificar** (45 o 60 mm); ancho de ranura y cap **verificar** |
 | Teclas Kailh Choc V2 con keycap 1u y LED por tecla | 20 | cutout 14 × 14 mm con rebaje 16 × 16 × 0.8 mm (como el Brain); keycap ~18 × 17 mm |
 
@@ -83,7 +83,7 @@ celdas de la GUI redistribuidas, encoders fuera del ancho de la pantalla). Expli
 | Placa portadora (reutilizada del Brain) | **97 × 100 mm**; ~20 mm de alto sobre el piso (separador + placa + zócalo + Teensy) | Teensy 4.1 en zócalo; conector de panel IDC 2×15; cable I2C desde el zócalo del Audio Shield (que en GroovePush va vacío) |
 | PCB de teclas (20 Choc V2 + LEDs + 2× MCP23017) | según layout | a −3.4 mm bajo la cara superior del aluminio, como la PCB-K del Brain |
 | PCB de encoders | según layout | a −12 mm (base de los EC11), como la PCB-A del Brain |
-| 2× NeoTrellis | 60 × 60 mm cada una | sujeción propia; el elastómero asoma por el aluminio |
+| NeoTrellis M4 | 120.0 × 62.0 × 8.3 mm | sujeción propia; el elastómero asoma por el aluminio. Se alimenta por su **USB-C** (5 V) y se conecta a la portadora por UART con su puerto JST de 4 pines; trae jack TRRS propio (sin uso por ahora) |
 | Cable DSI | largo **verificar** | radio de curvatura amplio; no doblar en filo |
 
 ## Conectores (panel trasero o laterales)
@@ -121,7 +121,7 @@ celdas de la GUI redistribuidas, encoders fuera del ancho de la pantalla). Expli
 2. **Tabla de alineación:** por cada encoder, su centro físico (mm) y el centro de su celda de
    soft-key en pantalla (px), para fijar la GUI.
 3. **Corte lateral:** inclinación, alturas y apilado interno (Pi 5 + HAT + cooler, pantalla,
-   portadora, PCBs de panel, NeoTrellis).
+   portadora, PCBs de panel, NeoTrellis M4).
 4. **Panel de conectores** con posiciones.
 5. **Vista explotada** con piezas y materiales.
 6. **Reporte de las 13 reglas** con pasa / no pasa y el valor.

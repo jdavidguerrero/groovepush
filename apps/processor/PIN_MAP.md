@@ -6,7 +6,7 @@
 > Reconciled 2026-07-16 during the from-scratch rebuild. Wire the protoboard to **this** map.
 
 ## Phase 1 scope (protoboard, current)
-Building **now**: NeoTrellis (I2C), 8× encoders (EC11 with integrated switch), 4× faders,
+Building **now**: NeoTrellis M4 (UART), 8× encoders (EC11 with integrated switch), 4× faders,
 2× MCP23017 (8 encoder switches + transport/function buttons; target 28 inputs, ADR-0004).
 **Not** in this phase:
 - ❌ Piezo, IR/theremin — **removed from this device** (future standalone e-drum module).
@@ -26,9 +26,10 @@ nothing is wired for these on the bench right now.
 ## Reserved / fixed
 | Function | Teensy pin(s) | Notes |
 |---|---|---|
-| Serial1 → Raspberry Pi (GUI) | RX1 = **0**, TX1 = **1** | hardware UART; do not reuse |
+| Serial1 ↔ NeoTrellis M4 | RX1 = **0**, TX1 = **1** | 1 Mbps; M4 side = its 4-pin JST port (`UART_CONNECTIONS.md`) |
+| Serial2 ↔ Raspberry Pi (GUI) | RX2 = **7**, TX2 = **8** | 115200 (`main.cpp`: `guiInterface.begin(Serial2)`) |
 | Built-in LED | **13** | status |
-| I2C `Wire` (NeoTrellis + MCP23017) | SDA = **18**, SCL = **19** | 4.7 kΩ pull-ups; A4/A5 |
+| I2C `Wire` (MCP23017 ×2) | SDA = **18**, SCL = **19** | 4.7 kΩ pull-ups; A4/A5 |
 | USB | native | class-compliant USB-MIDI to the host |
 
 ## Encoders (8 × quadrature A/B)
@@ -107,20 +108,23 @@ Encoder switches are built into the EC11s. See `lib/ButtonManager/ButtonManager.
 ## I2C device addresses
 | Address | Device |
 |---|---|
-| 0x2E / 0x2F | NeoTrellis pad grid (Seesaw, I2C) — **authoritative link** |
 | 0x20 | MCP23017 #1 — encoder switches |
 | 0x21 | MCP23017 #2 — extra/transport buttons |
 
-## Decision: NeoTrellis link = I2C (not UART-M4)
-The build uses the **I2C NeoTrellis** (Seesaw, `0x2E/0x2F`) on `Wire`. The alternative
-**NeoTrellis M4 over bit-banged UART** (`UART_CONNECTIONS.md`, `UART_RX_PIN/TX_PIN`, the
-`neotrellis_m4` PlatformIO env) is **parked/deprecated** — do not wire it. Remove that
-path in a later cleanup task (tracked as G-P2).
+## Decision: NeoTrellis link = UART to the NeoTrellis M4 (corrected 2026-10-19)
+The pad grid is one **Adafruit NeoTrellis M4** (product 3938) running its own firmware
+(`src/neotrellis_m4`, env `neotrellis_m4`), linked to the Teensy on **`Serial1` @ 1 Mbps**
+through the M4's 4-pin JST port (`UART_CONNECTIONS.md`). The July note that called this path
+deprecated in favour of I2C Seesaw boards was **wrong** — those boards are not in the build.
+
+> ⚠️ **Known bug (gap G-P14):** the encoder map below puts Enc3/Enc4 on pins **6·7 and 8·9**,
+> and 7/8 are `Serial2`, the GUI link. The pre-Block-0 map `{2,3,4,5,6,9,10,11}` skipped 7/8
+> on purpose. Fix pending the carrier decision (G-H10), which moves the encoders anyway.
 
 ## Pin usage summary (no conflicts)
 ```
-0,1   Serial1 (RPi)        14-17 Faders A0-A3
+0,1   Serial1 (M4)         14-17 Faders A0-A3
 2-12  Encoders 1-6A        18,19 I2C (SDA/SCL)
-13    LED                  20-25 Piezo A6-A9 + IR A10-A11
+7,8   Serial2 (RPi) ⚠ G-P14 13 LED   20-25 (piezo/IR removed)
 26-30 Encoders 6B-8        33    NeoPixel data
 ```

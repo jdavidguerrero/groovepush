@@ -63,7 +63,11 @@ AI copilot needs.
 
 ## 7. Open questions / risks
 - GEN audition sound source (Live armed track vs onboard) — see parent §7.3.
-- ~~Reconcile I2C NeoTrellis vs UART NeoTrellis M4~~ — resolved: I2C (G-P2).
+- ~~Reconcile I2C NeoTrellis vs UART NeoTrellis M4~~ — resolved 2026-10-19: **UART NeoTrellis M4**
+  (the July "I2C" call was wrong, G-P2).
+- NeoTrellis M4 elastomer pads have **no velocity/pressure sensing**: R-PROC-1's velocity curve
+  can't come from force. Options: fixed velocity, accent via SHIFT/a button, velocity set by an
+  encoder, or tap strength from the M4's ADXL343 accelerometer (experimental).
 - ~~Encoder pin-map conflict~~ — resolved in `PIN_MAP.md` (G-P1).
 - Brain link topology (Teensy → Brain USB-A host vs Pi 5 hosting the Brain) — ADR-0002 Rev. 1.
 

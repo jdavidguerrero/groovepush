@@ -59,8 +59,9 @@ In-repo & related components:
 
 ## Hardware map (source of truth: `apps/processor/PIN_MAP.md`)
 
-- **Grid**: 8 tracks × 4 scenes = **32 pads** via **2× NeoTrellis** on the Teensy I2C bus
-  (`0x2E`/`0x2F`, Seesaw). The UART NeoTrellis M4 path is deprecated (gap G-P2).
+- **Grid**: 8 tracks × 4 scenes = **32 pads** on one **Adafruit NeoTrellis M4** (SAMD51,
+  120 × 62 mm, own firmware in `src/neotrellis_m4`), linked to the Teensy by **UART @ 1 Mbps**
+  through its 4-pin JST port. Not I2C Seesaw boards (corrected 2026-10-19, gap G-P2).
 - **Controls**: 8 EC11 encoders with push (A/B to Teensy GPIO, switches to MCP `0x20`),
   4 ALPS B50K faders (A0–A3), **28 MCP23017 inputs** on `0x20`/`0x21` (8 encoder switches +
   20 function buttons: transport, modes, bank, octave, edit — ADR-0004). On the PCB the
@@ -68,7 +69,8 @@ In-repo & related components:
 - **Removed from scope** (gap G-P11): piezo pads, Sharp IR "theremin", capacitive buttons —
   kept as DNP in `hardware/analog.kicad_sch` for a future e-drum module.
 - **Feedback**: per-pad RGB (NeoTrellis) + per-key LEDs and WS2812B chain (PCB phase only).
-- **Links**: Teensy↔RPi over UART (pins 0/1); Teensy↔NeoTrellis over I2C (pins 18/19).
+- **Links** (firmware today): Teensy `Serial1` (0/1) ↔ NeoTrellis M4 @ 1 Mbps;
+  Teensy `Serial2` (7/8) ↔ RPi @ 115200; I2C (18/19) ↔ the two MCP23017.
 - **Sibling instrument**: GrooveForge Brain (`~/GROOVEFORGE/grooveforge-brain`) — a Teensy
   synth that GroovePush can drive over USB (its USB-A host) in standalone (ADR-0002 Rev. 1).
   Shares GroovePush's visual identity (ADR-0003).

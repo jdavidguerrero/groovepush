@@ -46,6 +46,12 @@ is the "protoboard-level" global wiring.
 - Follow-ups: define the exact inter-board connector pinouts as part of `SPEC-HARDWARE`.
 
 ## Note: doc reconciliation (I2C vs UART NeoTrellis)
+
+> **Correction (2026-10-19):** the conclusion below was wrong. The user's pad grid is a single
+> **Adafruit NeoTrellis M4** (product 3938), linked by **UART** — exactly what `UART_CONNECTIONS.md`
+> and the firmware (`NeoTrellisLink` on `Serial1`, env `neotrellis_m4`) describe. The `processor`
+> sheet's "NeoTrellis I2C" connector (J2) must become a UART connector. Kept below for history.
+
 `UART_CONNECTIONS.md` / `Config.h` describe a **NeoTrellis M4** linked by bit-banged
 **UART** over its I2C jumper pads. The user's actual build uses **I2C NeoTrellis** boards
 (Seesaw, addresses `0x2E`/`0x2F`) on the Teensy I2C bus, per `PIN_DISTRIBUTION.md`. This
