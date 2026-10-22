@@ -3591,6 +3591,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C160404"
+			(at 39.37 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 39.37 139.7 0)
 			(hide yes)
@@ -3666,6 +3677,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 39.37 175.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C160405"
 			(at 39.37 175.26 0)
 			(hide yes)
 			(show_name no)
@@ -3767,6 +3789,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C160409"
+			(at 39.37 214.63 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 39.37 214.63 0)
 			(hide yes)
@@ -3838,7 +3871,7 @@
 				)
 			)
 		)
-		(property "Value" "MCP23017-E/SO"
+		(property "Value" "MCP23017T-E/SS"
 			(at 139.7 82.55 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3848,7 +3881,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_SO:SOIC-28W_7.5x17.9mm_P1.27mm"
+		(property "Footprint" "Package_SO:SSOP-28_5.3x10.2mm_P0.65mm"
 			(at 144.78 54.61 0)
 			(hide yes)
 			(show_name no)
@@ -3872,7 +3905,18 @@
 				(justify left)
 			)
 		)
-		(property "Description" "16-bit I/O expander, I2C, interrupts, w pull-ups, GPA7/GPB7 output only (https://microchip.my.site.com/s/article/GPA7---GPB7-Cannot-Be-Used-as-Inputs-In-MCP23017),  SOIC-28"
+		(property "LCSC" "C558584"
+			(at 139.7 80.01 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "16-bit I/O expander, I2C, interrupts, w pull-ups, GPA7/GPB7 output only (https://microchip.my.site.com/s/article/GPA7---GPB7-Cannot-Be-Used-as-Inputs-In-MCP23017),  SSOP-28"
 			(at 139.7 80.01 0)
 			(hide yes)
 			(show_name no)
@@ -4031,6 +4075,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 175.26 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 175.26 59.69 0)
 			(hide yes)
@@ -4102,6 +4157,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 190.5 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C15850"
 			(at 190.5 59.69 0)
 			(hide yes)
 			(show_name no)
@@ -4191,6 +4257,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C23162"
+			(at 175.26 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Resistor"
 			(at 175.26 110.49 0)
 			(hide yes)
@@ -4260,6 +4337,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 190.5 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
 			(at 190.5 110.49 0)
 			(hide yes)
 			(show_name no)
@@ -4439,6 +4527,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 232.41 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 232.41 90.17 0)
 			(hide yes)
@@ -4510,6 +4609,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 247.65 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 247.65 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -4689,6 +4799,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 276.86 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 276.86 90.17 0)
 			(hide yes)
@@ -4760,6 +4881,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 293.37 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 293.37 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -4939,6 +5071,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 322.58 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 322.58 90.17 0)
 			(hide yes)
@@ -5010,6 +5153,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 337.82 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 337.82 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -5189,6 +5343,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 367.03 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 367.03 90.17 0)
 			(hide yes)
@@ -5260,6 +5425,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 383.54 90.17 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 383.54 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -5439,6 +5615,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 232.41 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 232.41 160.02 0)
 			(hide yes)
@@ -5510,6 +5697,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 247.65 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 247.65 160.02 0)
 			(hide yes)
 			(show_name no)
@@ -5689,6 +5887,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 276.86 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 276.86 160.02 0)
 			(hide yes)
@@ -5760,6 +5969,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 293.37 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 293.37 160.02 0)
 			(hide yes)
 			(show_name no)
@@ -5939,6 +6159,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 322.58 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 322.58 160.02 0)
 			(hide yes)
@@ -6010,6 +6241,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 337.82 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 337.82 160.02 0)
 			(hide yes)
 			(show_name no)
@@ -6189,6 +6431,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C57112"
+			(at 367.03 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Unpolarized capacitor"
 			(at 367.03 160.02 0)
 			(hide yes)
@@ -6260,6 +6513,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 383.54 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
 			(at 383.54 160.02 0)
 			(hide yes)
 			(show_name no)
@@ -7402,7 +7666,7 @@
 		)
 		(uuid "eb4f188c-b545-474e-9dbc-77bde6c607e7")
 	)
-	(label "ENC1_SW"
+	(label "ENC5_SW"
 		(at 152.39999999999998 59.690000000000005 180)
 		(effects
 			(font
@@ -7412,7 +7676,7 @@
 		)
 		(uuid "1a1bf175-c019-4431-9e17-54570c8370db")
 	)
-	(label "ENC2_SW"
+	(label "ENC6_SW"
 		(at 152.39999999999998 62.230000000000004 180)
 		(effects
 			(font
@@ -7422,7 +7686,7 @@
 		)
 		(uuid "2dbc1928-dd04-4b72-a697-8ec791d9f9dd")
 	)
-	(label "ENC3_SW"
+	(label "ENC7_SW"
 		(at 152.39999999999998 64.77000000000001 180)
 		(effects
 			(font
@@ -7432,7 +7696,7 @@
 		)
 		(uuid "02562a20-aef2-4bca-9ad2-edc1b7129c14")
 	)
-	(label "ENC4_SW"
+	(label "ENC8_SW"
 		(at 152.39999999999998 67.31 180)
 		(effects
 			(font
@@ -7442,8 +7706,8 @@
 		)
 		(uuid "db5bd40e-e07e-4b50-84e2-af43f7309133")
 	)
-	(label "ENC5_SW"
-		(at 152.39999999999998 69.85000000000001 180)
+	(label "ENC2_SW"
+		(at 152.39999999999998 85.09 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7452,8 +7716,8 @@
 		)
 		(uuid "b17c0aa3-8164-4075-a9ce-6557774264ba")
 	)
-	(label "ENC6_SW"
-		(at 152.39999999999998 72.39 180)
+	(label "ENC3_SW"
+		(at 152.39999999999998 87.63 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7462,8 +7726,8 @@
 		)
 		(uuid "84572b4b-a62e-40b1-aff0-7b282a39c8dc")
 	)
-	(label "ENC7_SW"
-		(at 152.39999999999998 74.93 180)
+	(label "ENC4_SW"
+		(at 152.39999999999998 90.17 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7472,7 +7736,7 @@
 		)
 		(uuid "872a31d6-bcf9-4429-9be1-f4045662969e")
 	)
-	(label "ENC8_SW"
+	(label "ENC1_SW"
 		(at 152.39999999999998 82.55000000000001 180)
 		(effects
 			(font
@@ -8321,15 +8585,15 @@
 		(uuid "b636c022-f875-4e65-b97b-0992d65ea45a")
 	)
 	(no_connect
-		(at 152.39999999999998 85.09)
+		(at 152.39999999999998 69.85)
 		(uuid "b42e765e-c53d-4147-9c9e-d55098140513")
 	)
 	(no_connect
-		(at 152.39999999999998 87.63000000000001)
+		(at 152.39999999999998 72.39)
 		(uuid "fbc47f70-fff3-4c0a-978a-b19b1342883b")
 	)
 	(no_connect
-		(at 152.39999999999998 90.17)
+		(at 152.39999999999998 74.93)
 		(uuid "969d036d-536b-4765-976f-35e8429d3bc2")
 	)
 	(no_connect

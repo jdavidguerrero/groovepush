@@ -21,13 +21,19 @@ run sync_from_netlist.py "$B"
 run sync_fp_fields.py "$B"
 run trim_silk_outside.py "$B"
 run add_gnd_escapes.py "$B"
-for pass in 1 2; do
+for pass in $([ "${SKIP_FREEROUTING:-0}" = 1 ] || echo 1 2); do
   rm -f "../$B/$B.ses" "../$B/${B}_best.ses"
   run route_board.py "$B" 60 || echo "Freerouting pass $pass gave no result"
 done
+# Nets that need their own lane end to end go first (PCB-A: the 0.5 mm +5V from J1 to J4, 200 mm,
+# then longest first: everything fans out of the tab's IDC along the strip).
+case "$B" in pcb-a) export ROUTE_FIRST=/+5V ;; esac
 run finish_routing.py "$B"
+run repair_routes.py "$B"
 run clean_vias.py "$B"
 run add_gnd_pours.py "$B"
+TIE=$("$KPY" tie_loose_gnd.py "$B" 2>/dev/null || true); echo "$TIE" | grep -v "^$" || true
+if echo "$TIE" | grep -q "ruteado"; then run add_gnd_pours.py "$B"; fi
 run sync_fp_fields.py "$B"
 "$KC" pcb drc --schematic-parity --severity-all -o "/tmp/$B-drc.rpt" "../$B/$B.kicad_pcb" >/dev/null 2>&1 || true
 grep -E "Found" "/tmp/$B-drc.rpt"

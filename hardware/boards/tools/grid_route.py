@@ -20,6 +20,9 @@ RES = 0.1                      # mm por celda
 CLEAR = 0.26                   # holgura a otras redes (mm): cubre la clase Power (0.25)
 EDGE = 0.4                     # al borde (mm)
 VIA_D, VIA_DRILL, VIA_COST = 0.6, 0.3, 40.0
+# Bloquear lo ruteado (como en el Brain, donde sólo lo de Freerouting se levanta). Sin Freerouting todo
+# sale de acá, y bloqueado el rip-up de finish_routing no tendría nada que levantar.
+LOCK = os.environ.get("GRID_LOCK", "0") == "1"
 
 
 def main():
@@ -42,7 +45,7 @@ def main():
     # Si ya están unidos por cobre (pistas y vías, sin contar planos), no hay nada que hacer.
     board.BuildConnectivity()
     conn = board.GetConnectivity()
-    seen, todo = set(), [pa]
+    seen, todo = set(), ([] if os.environ.get("GRID_FORCE") else [pa])  # GRID_FORCE: rutear igual
     while todo:
         item = todo.pop()
         key = item.m_Uuid.AsString()
@@ -84,13 +87,19 @@ def main():
         mask[i0:i1, j0:j1] |= (X - ax - t * dx) ** 2 + (Y - ay - t * dy) ** 2 <= r * r
 
     def mark_rect(mask, cx0, cy0, cx1, cy1, r):
-        i0, i1 = max(0, int((cy0 - r - y0) / RES)), min(ny, int((cy1 + r - y0) / RES) + 2)
-        j0, j1 = max(0, int((cx0 - r - x0) / RES)), min(nx, int((cx1 + r - x0) / RES) + 2)
-        mask[i0:i1, j0:j1] = True
+        # Exacto: sólo las celdas cuyo centro cae dentro del rectángulo inflado. El redondeo hacia
+        # afuera (±2 celdas) tapaba el canal entre pads de un SSOP (paso 0.65 mm).
+        i0, i1 = max(0, math.ceil((cy0 - r - y0) / RES - 1e-9)), min(ny, math.floor((cy1 + r - y0) / RES + 1e-9) + 1)
+        j0, j1 = max(0, math.ceil((cx0 - r - x0) / RES - 1e-9)), min(nx, math.floor((cx1 + r - x0) / RES + 1e-9) + 1)
+        if i0 < i1 and j0 < j1:
+            mask[i0:i1, j0:j1] = True
 
     half = width / 2
     for t in board.GetTracks():
         if t.GetNetname() == net:
+            if t.GetClass() == "PCB_VIA":  # misma red: igual respeta agujero a agujero (0.5 mm)
+                (cx, cy) = pcbnew.ToMM(t.GetPosition())
+                mark_disk(via_blocked, cx, cy, VIA_DRILL + 0.55)
             continue
         if t.GetClass() == "PCB_VIA":
             (cx, cy), r = pcbnew.ToMM(t.GetPosition()), pcbnew.ToMM(t.GetWidth()) / 2
@@ -135,6 +144,26 @@ def main():
             for k in range(2):
                 mark_seg(blocked[k], ax, ay, bx, by, EDGE + half)
             mark_seg(via_blocked, ax, ay, bx, by, EDGE + VIA_D / 2)
+
+    # Ventanas Edge.Cuts dentro de huellas (SK6812 de montaje inverso): el hueco entero bloquea.
+    for fp in board.GetFootprints():
+        cuts = [g for g in fp.GraphicalItems() if g.GetLayer() == pcbnew.Edge_Cuts]
+        if not cuts:
+            continue
+        box = cuts[0].GetBoundingBox()
+        for g in cuts[1:]:
+            box.Merge(g.GetBoundingBox())
+        bx0, by0 = pcbnew.ToMM(box.GetLeft()), pcbnew.ToMM(box.GetTop())
+        bx1, by1 = pcbnew.ToMM(box.GetRight()), pcbnew.ToMM(box.GetBottom())
+        for k in range(2):
+            mark_rect(blocked[k], bx0, by0, bx1, by1, EDGE + half)
+        mark_rect(via_blocked, bx0, by0, bx1, by1, EDGE + VIA_D / 2)
+
+    if os.environ.get("GRID_DUMP"):              # máscaras como PGM (F, B, vías) para depurar
+        for k, m in (("F", blocked[0]), ("B", blocked[1]), ("V", via_blocked)):
+            with open(f"{os.environ['GRID_DUMP']}-{k}.pgm", "wb") as fh:
+                fh.write(b"P5 %d %d 255\n" % (nx, ny))
+                fh.write((np.where(m, 0, 255)).astype(np.uint8).tobytes())
 
     def cell(x, y):
         return int(round((y - y0) / RES)), int(round((x - x0) / RES))
@@ -217,7 +246,7 @@ def main():
             v.SetWidth(pcbnew.FromMM(VIA_D))
             v.SetDrill(pcbnew.FromMM(VIA_DRILL))
             v.SetNet(netinfo)
-            v.SetLocked(True)
+            v.SetLocked(LOCK)
             board.Add(v)
             added += 1
             continue
@@ -227,7 +256,7 @@ def main():
         t.SetWidth(pcbnew.FromMM(width))
         t.SetLayer(layers[n1[0]])
         t.SetNet(netinfo)
-        t.SetLocked(True)
+        t.SetLocked(LOCK)
         board.Add(t)
         added += 1
     pcbnew.SaveBoard(path, board)

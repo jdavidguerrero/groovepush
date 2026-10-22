@@ -77,7 +77,7 @@ def outline(board, x0, y0, x1, y1, r=1.0):
     """Rectangular Edge.Cuts outline in panel coordinates with rounded corners of radius r."""
     for d in list(board.GetDrawings()):
         if d.GetLayer() == pcbnew.Edge_Cuts:
-            board.Remove(d)
+            board.Delete(d)
     s = pcbnew.PCB_SHAPE(board)
     s.SetShape(pcbnew.SHAPE_T_RECT)
     s.SetStart(pcb(x0, y1))
@@ -154,3 +154,39 @@ def hide_refs(board, refs):
     for r in refs:
         f = fp(board, r)
         f.Reference().SetVisible(False)
+
+
+def outline_poly(board, pts):
+    """Closed Edge.Cuts polygon through panel-coordinate points (for L-shaped boards)."""
+    for d in list(board.GetDrawings()):
+        if d.GetLayer() == pcbnew.Edge_Cuts:
+            board.Delete(d)
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:] + pts[:1]):
+        s = pcbnew.PCB_SHAPE(board)
+        s.SetShape(pcbnew.SHAPE_T_SEGMENT)
+        s.SetLayer(pcbnew.Edge_Cuts)
+        s.SetWidth(pcbnew.FromMM(0.1))
+        s.SetStart(pcb(x0, y0))
+        s.SetEnd(pcb(x1, y1))
+        board.Add(s)
+
+
+def drop(board, refs):
+    """Delete footprints that were removed from the schematic."""
+    for r in refs:
+        f = board.FindFootprintByReference(r)
+        if f is not None:
+            board.Delete(f)
+
+
+def place_center(board, ref, x, y, rot=0.0, back=False, pads=None):
+    """Place `ref` so the centre of its pads (or of the pads numbered in `pads`, e.g. ['MP'] for an
+    EC11's shaft) lands on panel (x, y)."""
+    f = place(board, ref, x, y, rot, back)
+    sel = [p for p in f.Pads() if pads is None or p.GetNumber() in pads]
+    xs = [p.GetPosition().x for p in sel]; ys = [p.GetPosition().y for p in sel]
+    cx, cy = (min(xs) + max(xs)) // 2, (min(ys) + max(ys)) // 2
+    pos = f.GetPosition()
+    want = pcb(x, y)
+    f.SetPosition(pcbnew.VECTOR2I(pos.x + (want.x - cx), pos.y + (want.y - cy)))
+    return f

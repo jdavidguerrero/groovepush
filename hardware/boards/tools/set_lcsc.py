@@ -1,4 +1,5 @@
-"""Escribe el campo LCSC en los símbolos de los tres esquemáticos (para el BOM de ensamble de JLCPCB).
+"""Write the LCSC field on every SMD symbol of the four panel boards (JLCPCB assembly BOM).
+Adapted from the GrooveForge Brain tool of the same name.
 
   python3 apps/hardware/kicad/studio/tools/set_lcsc.py
 
@@ -14,25 +15,25 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 # Valor del símbolo → LCSC. El valor alcanza para distinguir porque cada valor usa un solo encapsulado.
 LCSC = {
-    # Resistencias 0603 1 % (UNI-ROYAL, todas Basic; la escalera del pad pasó de E96 a 33k/12k/5.1k)
-    "330": "C23138", "1k": "C21190", "4.7k": "C23162", "10k": "C25804", "47k": "C25819",
-    "100k": "C25803", "33k": "C4216", "12k": "C22790", "5.1k": "C23186",
-    # MLCC
-    "10nF": "C57112", "100nF": "C14663", "1uF": "C28323", "4.7uF": "C1779", "10uF": "C15850",
-    "47uF": "C96123",
-    # Electrolítico 6.3×7.7 (el footprint actual), 16 V
-    "100uF": "C2992605",
-    # Semiconductores y protección
-    "SMBJ5.0CA": "C113975", "BAT54S": "C7420333", "3A hold": "C69689",
-    "74AHCT1G125": "C842287", "MCP6004": "C7378",
-    # SK6812MINI-EA: mismo pinout y cuerpo que el MINI-E, pero entra en ensamble Economic
-    "SK6812MINI-EA": "C5378731",
+    # GroovePush panel boards (checked with the JLCPCB MCP 2026-10-19: in stock, Economic assembly)
+    "4.7k": "C23162", "10k": "C25804",
+    "10nF": "C57112", "100nF": "C14663", "10uF": "C15850", "47uF": "C96123",
+    "MCP23017-E/SO": "C47023", "MCP23017T-E/SS": "C558584", "SK6812MINI-EA": "C5378731",
 }
-# Conectores SMD, por referencia (su valor es descriptivo)
-BY_REF = {("pcb-k", "J1"): "C160409"}
-# Prototipo económico (2026-10-15): JLC ensambla solo los SMD de la portadora. Jacks, IDC, zócalos, headers y
-# todo PCB-A se sueldan a mano con piezas de fab/lcsc-piezas-sueltas.csv.
-RENAME = {("pcb-k", "SK6812MINI-E"): "SK6812MINI-EA"}
+# JST-SH connectors, by reference (their value is descriptive)
+BY_REF = {
+    ("pcb-a", "J2"): "C160404", ("pcb-a", "J3"): "C160405", ("pcb-a", "J4"): "C160409",
+    ("pcb-f", "J1"): "C160405",
+    ("pcb-k1", "J1"): "C160409", ("pcb-k1", "J2"): "C160409",
+    ("pcb-k2", "J1"): "C160409",
+    ("pcb-s", "J1"): "C160390",   # BM04B-SRSS-TB (vertical); J2 (JST-PH, THT) is hand-soldered
+}
+RENAME = {}
+
+
+def lookup(value):
+    """Exact value, or the value's first word (e.g. 'MCP23017-E/SO @0x21', 'SK6812MINI-EA (PLAY, idx 11)')."""
+    return LCSC.get(value) or LCSC.get(value.split(" ")[0])
 
 PROP = ('\t\t(property "LCSC" "{}"\n\t\t\t(at {} {} 0)\n\t\t\t(hide yes)\n\t\t\t(show_name no)\n'
         '\t\t\t(do_not_autoplace no)\n\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n'
@@ -54,7 +55,7 @@ def process(board):
             if new_value:
                 part = part.replace(f'(property "Value" "{value}"', f'(property "Value" "{new_value}"', 1)
                 value = new_value
-            code = BY_REF.get((board, ref)) or LCSC.get(value)
+            code = BY_REF.get((board, ref)) or lookup(value)
             part = re.sub(r'\t\t\(property "LCSC" "[^"]*"\n.*?\n\t\t\)\n', "", part, flags=re.S)
             if code:
                 at = re.search(r"^\t\t\(at ([-\d.]+) ([-\d.]+)", part, re.M)
@@ -66,5 +67,5 @@ def process(board):
     print(f"{board}: LCSC en {n} símbolos")
 
 
-for b in ("pcb-k", "pcb-a", "portadora"):
+for b in ("pcb-a", "pcb-f", "pcb-k1", "pcb-k2", "pcb-s"):
     process(b)

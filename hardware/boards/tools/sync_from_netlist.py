@@ -53,11 +53,13 @@ for n in list(b.GetNetsByName().values()):
     if old and not old.startswith("/") and not old.startswith("unconnected"):
         n.SetNetname("/" + old)
         renamed += 1
-# pads the schematic leaves unconnected must carry the same 'unconnected-(...)' name
+# every pad carries the schematic's net (pin re-assignments, 'unconnected-(...)' names)
+reassigned = 0
 for fpt in b.GetFootprints():
     for p in fpt.Pads():
         want = padnet.get((fpt.GetReference(), p.GetNumber()))
-        if want and want.startswith("unconnected") and p.GetNetname() != want:
+        if want and p.GetNetname() != want:
+            reassigned += 1
             ni = b.FindNet(want)
             if ni is None:
                 ni = pcbnew.NETINFO_ITEM(b, want)
@@ -88,4 +90,4 @@ ds.setdefault("rules", {}).update({
     "min_through_hole_diameter": 0.3, "min_track_width": 0.2, "min_via_annular_width": 0.13,
     "min_via_diameter": 0.5, "solder_mask_to_copper_clearance": 0.0})
 json.dump(pj, open(pro, "w"), indent=2)
-print(f"{name}: {renamed} nets renamed, {len(comps)} components synced, JLC rules written")
+print(f"{name}: {renamed} nets renamed, {reassigned} pads re-assigned, {len(comps)} components synced, JLC rules written")

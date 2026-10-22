@@ -17,7 +17,8 @@ import pcbnew
 HERE = os.path.dirname(os.path.abspath(__file__))
 GROUP = "escapes_gnd"
 VIA_D, VIA_DRILL, W = 0.6, 0.3, 0.3
-CLEAR = 0.3                     # a cobre de otra red (mm)
+CLEAR = 0.3                     # vía a cobre de otra red (mm)
+TRACK_CLEAR = 0.25              # tramo a cobre de otra red: regla de la placa (entra entre pads de SSOP)
 HOLE_GAP = 0.5                  # agujero a agujero (JLCPCB)
 
 
@@ -42,7 +43,39 @@ def main():
     edge = board.GetBoardEdgesBoundingBox()
     ex0, ey0 = pcbnew.ToMM(edge.GetLeft()) + 1.0, pcbnew.ToMM(edge.GetTop()) + 1.0
     ex1, ey1 = pcbnew.ToMM(edge.GetRight()) - 1.0, pcbnew.ToMM(edge.GetBottom()) - 1.0
+    # Contorno real (placas en L o en T): la caja sola no ve las esquinas interiores.
+    edges = []
+    for d in board.GetDrawings():
+        if d.GetLayer() == pcbnew.Edge_Cuts and d.GetShape() == pcbnew.SHAPE_T_SEGMENT:
+            edges.append((pcbnew.ToMM(d.GetStart()), pcbnew.ToMM(d.GetEnd())))
+    for fp in board.GetFootprints():          # ventanas Edge.Cuts dentro de huellas (LEDs inversos)
+        for d in fp.GraphicalItems():
+            if d.GetLayer() == pcbnew.Edge_Cuts and d.GetShape() == pcbnew.SHAPE_T_SEGMENT:
+                edges.append((pcbnew.ToMM(d.GetStart()), pcbnew.ToMM(d.GetEnd())))
+
+    def edge_dist(x, y):
+        best = 1e9
+        for (ax, ay), (bx, by) in edges:
+            dx, dy = bx - ax, by - ay
+            L2 = dx * dx + dy * dy or 1e-12
+            t = max(0, min(1, ((x - ax) * dx + (y - ay) * dy) / L2))
+            best = min(best, math.hypot(x - ax - t * dx, y - ay - t * dy))
+        return best
+
     placed = []
+
+    def track_free(x0, y0, x1, y1, own_pad):
+        for i in range(11):
+            x, y = x0 + (x1 - x0) * i / 10, y0 + (y1 - y0) * i / 10
+            for p in pads:
+                if p is own_pad or p.GetNetname() == "/GND":
+                    continue
+                bb = p.GetBoundingBox()
+                dx = max(pcbnew.ToMM(bb.GetLeft()) - x, 0, x - pcbnew.ToMM(bb.GetRight()))
+                dy = max(pcbnew.ToMM(bb.GetTop()) - y, 0, y - pcbnew.ToMM(bb.GetBottom()))
+                if math.hypot(dx, dy) < W / 2 + TRACK_CLEAR:
+                    return False
+        return True
 
     def free(x, y, own_pad):
         r = VIA_D / 2
@@ -63,7 +96,7 @@ def main():
         for (vx, vy) in placed:
             if math.hypot(x - vx, y - vy) < VIA_DRILL + HOLE_GAP:
                 return False
-        return ex0 <= x <= ex1 and ey0 <= y <= ey1
+        return ex0 <= x <= ex1 and ey0 <= y <= ey1 and edge_dist(x, y) >= VIA_D / 2 + 0.5
 
     count, failed = 0, []
     for fp in board.GetFootprints():
@@ -83,7 +116,7 @@ def main():
                 for extra in (0.25, 0.6, 1.0):
                     vx = x + dx * (sx / 2 + VIA_D / 2 + extra)
                     vy = y + dy * (sy / 2 + VIA_D / 2 + extra)
-                    if free(vx, vy, pad):
+                    if free(vx, vy, pad) and track_free(x, y, vx, vy, pad):
                         ok = True
                         break
                 if ok:

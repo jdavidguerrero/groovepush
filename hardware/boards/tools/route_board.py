@@ -22,7 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 JAR = os.path.expanduser("~/.kicad-mcp/freerouting.jar")
 SKIP_NETS = ["/GND"]
 ROUTE_CLEARANCE = 0.25
-TIMEOUT = 420
+TIMEOUT = int(os.environ.get("ROUTE_TIMEOUT", "420"))
 
 
 def add_npth_keepouts(board, margin=0.3):

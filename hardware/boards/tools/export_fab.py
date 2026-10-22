@@ -1,4 +1,5 @@
-"""Genera los archivos para pedir las tres placas a JLCPCB: Gerbers + taladros (zip), BOM y CPL.
+"""Gerbers + drill (zip), BOM and CPL for ordering the GroovePush panel boards at JLCPCB.
+Adapted from the GrooveForge Brain tool of the same name.
 
   $KPY apps/hardware/kicad/studio/tools/export_fab.py            # las tres
   $KPY apps/hardware/kicad/studio/tools/export_fab.py portadora  # una
@@ -25,11 +26,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 KICAD_CLI = "/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli"
 LAYERS = "F.Cu,B.Cu,F.Paste,B.Paste,F.Silkscreen,B.Silkscreen,F.Mask,B.Mask,Edge.Cuts"
-# Rev. 2026-10-15 (prototipo económico): PCB-K no se pide (sin LEDs, los Choc van cableados a J1 de PCB-A)
-# y PCB-A va sin ensamble. Solo la portadora lleva BOM y CPL.
-BOARDS = ["pcb-a", "portadora"]
-ASSEMBLE = {"pcb-k": True, "pcb-a": False, "portadora": True}
-ROT_FIX = [(r"^SOT-23", 180), (r"^SOIC-", 270), (r"^CP_Elec_", 180),
+# GroovePush: the four panel boards, all with single-sided (B.Cu) Economic assembly. THT parts
+# (EC11, RS6011 faders, Choc V2, the IDC box header) carry no LCSC field and are hand-soldered.
+BOARDS = ["pcb-a", "pcb-f", "pcb-k1", "pcb-k2", "pcb-s"]
+ASSEMBLE = {b: True for b in BOARDS}
+ASSEMBLE["pcb-s"] = False   # shield adapter: two pin headers + two JSTs, hand-soldered
+ROT_FIX = [(r"^SOT-23", 180), (r"^SOIC-", 270), (r"^SSOP-", 270), (r"^CP_Elec_", 180),
            (r"^IDC-Header_", -90)]   # el modelo de JLC del box header está acostado a 0°
 
 
@@ -68,7 +70,16 @@ def bom_and_cpl(name, pcb, out):
             continue
         ref, lcsc = fp.GetReference(), fp.GetFieldText("LCSC")
         package = str(fp.GetFPID().GetLibItemName())
-        groups.setdefault((fp.GetValue(), package, lcsc), []).append(ref)
+        # One line per part: the LEDs carry their key in the value ("SK6812MINI-EA (PLAY, idx 11)").
+        value = re.sub(r"\s*\(.*\)$", "", fp.GetValue())
+        m = re.match(r"JST_SH_(SM\d+B-SRSS-TB)", package)   # the cable note ("to PCB-K2 J1") isn't a part name
+        if m:
+            value = m.group(1)
+        groups.setdefault((package, lcsc), {"value": value, "refs": []})
+        g = groups[(package, lcsc)]
+        g["refs"].append(ref)
+        if len(value) < len(g["value"]):
+            g["value"] = value
         rot = fp.GetOrientationDegrees()
         for pattern, delta in ROT_FIX:
             if re.match(pattern, package):
@@ -81,8 +92,8 @@ def bom_and_cpl(name, pcb, out):
     with open(os.path.join(out, f"{name}-bom.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
-        for (value, package, lcsc), refs in sorted(groups.items(), key=lambda g: natural(g[1][0])):
-            w.writerow([value, ",".join(sorted(refs, key=natural)), package, lcsc])
+        for (package, lcsc), g in sorted(groups.items(), key=lambda g: natural(sorted(g[1]["refs"], key=natural)[0])):
+            w.writerow([g["value"], ",".join(sorted(g["refs"], key=natural)), package, lcsc])
     with open(os.path.join(out, f"{name}-cpl.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])

@@ -1253,6 +1253,17 @@
 				)
 			)
 		)
+		(property "LCSC" "C160409"
+			(at 30.48 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "Generic connector, single row, 01x10, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 30.48 59.69 0)
 			(hide yes)
@@ -1348,6 +1359,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 59.69 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C96123"
 			(at 59.69 39.37 0)
 			(hide yes)
 			(show_name no)
@@ -1521,6 +1543,17 @@
 				(justify left top)
 			)
 		)
+		(property "LCSC" "C5378731"
+			(at 100.33 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "RGB LED with integrated controller"
 			(at 100.33 64.77 0)
 			(hide yes)
@@ -1598,6 +1631,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 115.57 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 115.57 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -1771,6 +1815,17 @@
 				(justify left top)
 			)
 		)
+		(property "LCSC" "C5378731"
+			(at 139.7 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "RGB LED with integrated controller"
 			(at 139.7 64.77 0)
 			(hide yes)
@@ -1848,6 +1903,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 154.94 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 154.94 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -2021,6 +2087,17 @@
 				(justify left top)
 			)
 		)
+		(property "LCSC" "C5378731"
+			(at 180.34 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "RGB LED with integrated controller"
 			(at 180.34 64.77 0)
 			(hide yes)
@@ -2098,6 +2175,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 195.58 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 195.58 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -2271,6 +2359,17 @@
 				(justify left top)
 			)
 		)
+		(property "LCSC" "C5378731"
+			(at 219.71 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "RGB LED with integrated controller"
 			(at 219.71 64.77 0)
 			(hide yes)
@@ -2348,6 +2447,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 234.95 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 234.95 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -2521,6 +2631,17 @@
 				(justify left top)
 			)
 		)
+		(property "LCSC" "C5378731"
+			(at 260.35 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(property "Description" "RGB LED with integrated controller"
 			(at 260.35 64.77 0)
 			(hide yes)
@@ -2598,6 +2719,17 @@
 			)
 		)
 		(property "Datasheet" ""
+			(at 275.59 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C14663"
 			(at 275.59 64.77 0)
 			(hide yes)
 			(show_name no)
