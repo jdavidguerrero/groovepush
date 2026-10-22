@@ -1,5 +1,9 @@
 # BIBLIA DE PRODUCCIÓN — Temporada 1 · "Dos cerebros, un banco"
 
+> **Reenfocada el 2026-10-22.** La Temporada 1 es ahora solo el GrooveForge Brain · Studio como instrumento para el
+> live set y la producción: `grooveforge-brain/apps/docs/content/temporada-1/BIBLIA_T1_LIVESET.md`. Este documento
+> queda como material de la Temporada 2 (GroovePush) y como referencia de la auditoría técnica.
+
 > Documento maestro. Fusiona `01_borrador_claude.md` (estructura y precisión técnica) con
 > `02_optimizacion_codex.md` (retención, packaging y rodaje), después de auditar el 02 contra los dos repos.
 > Fecha: 2026-10-22. Repos: `groovepush` @ `65c1c4f`, `grooveforge-brain` @ `c32a4f9`.
