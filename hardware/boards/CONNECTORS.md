@@ -6,12 +6,31 @@
 
 ```
  Brain carrier J5 (IDC 2×15) ══ribbon══ PCB-A J1
- Brain carrier J15 (Shield socket) → perfboard adapter ──JST-SH 4── PCB-A J2  (I2C)
-                                                    └──JST-PH 4── NeoTrellis M4 (UART)
+ Brain carrier J15/J16 (Shield sockets) → PCB-S (shield adapter) ──JST-SH 4── PCB-A J2  (I2C)
+                                                               └──JST-PH 4── NeoTrellis M4 (UART)
  PCB-A J3 (JST-SH 6)  ── PCB-F J1        faders
- PCB-A J4 (JST-SH 10) ── PCB-K1 J1       I2C, LED data, +5V, MCP INT
+ PCB-A J4 (JST-SH 10) ── PCB-K1 J1       I2C, LED data, +5V, MCP INT  (~20–25 cm cable)
  PCB-K1 J2 (JST-SH 10) ── PCB-K2 J1      mode keys + LED data out/return
 ```
+
+## PCB-S — shield adapter (plugs into carrier J15/J16)
+
+Two 1×14 male headers (long pins down) sit over the carrier's empty Audio Shield sockets, pin for
+pin; no parts besides the connectors. Only these socket pins are used, the rest stay unconnected:
+
+| Header pin | Carrier socket | Teensy | Net | Goes to |
+|---|---|---|---|---|
+| P1.6 | J15.6 | 18 | SDA | J1.3 |
+| P1.7 | J15.7 | 19 | SCL | J1.4 |
+| P1.8 | J15.8 | 20 (TX5) | TX5 | J2.3 (M4 SDA = its RX) |
+| P1.9 | J15.9 | 21 (RX5) | RX5 | J2.4 (M4 SCL = its TX) |
+| P1.12 | J15.12 | — | +3V3 | J1.2 |
+| P1.13 / P2.14 | J15.13 / J16.14 | — | GND | J1.1, J2.1 |
+
+- **J1, JST-SH 4 vertical (BM04B-SRSS-TB) → PCB-A J2**, Qwiic order: GND, +3V3, SDA, SCL.
+- **J2, JST-PH 4 vertical (B4B-PH-K-S) → NeoTrellis M4 CONN1**, 1:1 cable: GND, *n.c.*, TX5, RX5.
+  M4 CONN1 is GND, 3.3 V, SDA, SCL (from its board file); pin 2 is the M4's own 3.3 V rail, so it
+  stays unconnected here — the M4 is powered separately and only GND is shared.
 
 ## PCB-A J1 — IDC 2×15 box header (to carrier J5, ribbon 1:1)
 
@@ -50,6 +69,12 @@ doesn't fit).
 
 ## PCB-A J4 ↔ PCB-K1 J1 — JST-SH 10, keys board
 
+J4 sits on PCB-A's tab, next to J1 (rev. 2026-10-20). At the strip's left end its six lines ran
+200 mm along the encoder strip and the board didn't route. The cable is therefore ~20–25 cm
+(pre-crimped JST-SH, 28 AWG): it leaves the tab towards the M4 and runs under PCB-A / the M4 to
+PCB-K1 J1 at the back of the edit block. At that length I2C (4.7 kΩ pull-ups on PCB-A) and the
+buffered 800 kHz LED data are fine; +5V uses two pins and GND three.
+
 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 |---|---|---|---|---|---|---|---|---|---|
 | +5V | +5V | GND | GND | +3V3 | SDA | SCL | LED_DIN | INT_K | GND |
@@ -62,11 +87,16 @@ doesn't fit).
 
 ## MCP23017 allocation (supersedes the provisional table in PIN_MAP.md)
 
+Each MCP reads the keys next to it (rev. 2026-10-20: the first K1 layout put both MCPs on the left
+and Freerouting couldn't route 10 key lines along the 23 mm front strip). U1's keys are ordered
+for a planar fan-out: GPB (the SSOP's left side) feeds the transport keys to its left and GPA (right
+side) the navigation keys to its right, the pin nearest the front edge going to the nearest key.
+
 | MCP | Addr | Board | GPA0–GPA6 | GPB0–GPB6 |
 |---|---|---|---|---|
-| U1 | 0x20 | PCB-A | ENC1–ENC7 switches | GPB0 ENC8 switch; GPB1–6 spare |
-| U1 | 0x21 | PCB-K1 | PLAY, STOP, RECORD, LOOP, METRO, SHIFT, BANK_L | BANK_R, OCT_DN, OCT_UP, DELETE, DUPLICATE, QUANTIZE, NEW |
-| U2 | 0x22 | PCB-K1 | UNDO, BROWSE, MIX, DEVICE, NOTE, SESSION, spare | spare |
+| U1 | 0x20 | PCB-A (SSOP-28, front band between E4 and E5) | GPA0–3: ENC5–ENC8 switches; GPA4–6 spare | GPB0–3: ENC1–ENC4 switches; GPB4–6 spare |
+| U1 | 0x21 | PCB-K1 (SSOP-28, between METRO and BANK_L) | GPA0 OCT_UP, GPA1 OCT_DN, GPA2 BANK_R, GPA3 BANK_L; GPA4–6 spare | GPB0 METRO, GPB1 LOOP, GPB2 RECORD, GPB3 STOP, GPB4 PLAY; GPB5–6 spare |
+| U2 | 0x22 | PCB-K1 (SOIC-28W, above UNDO) | UNDO, BROWSE, MIX, DEVICE, NOTE, SESSION, SHIFT | DELETE, DUPLICATE, QUANTIZE, NEW; GPB4–6 spare |
 
 GPA7/GPB7 are never used (output-only erratum). Keys and encoder switches pull to GND; the MCP's
 internal pull-ups are enabled in firmware. INT_K is shared by 0x21 and 0x22: configure both as

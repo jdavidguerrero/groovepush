@@ -30,7 +30,7 @@ nothing is wired for these on the bench right now.
 |---|---|---|---|
 | Serial1 ↔ Raspberry Pi 5 (GUI) | RX1 = **0**, TX1 = **1** | J6 (2×5 Dupont) | 115200; `TEENSY_GUI_SERIAL`. Connect **UART + GND only** — the Pi 5 has its own supply |
 | Serial5 ↔ NeoTrellis M4 | TX5 = **20**, RX5 = **21** | J15 (Shield socket) | 1 Mbps; `TEENSY_M4_SERIAL`. M4 side = its 4-pin JST port (`UART_CONNECTIONS.md`) |
-| I2C `Wire` (MCP23017 ×2) | SDA = **18**, SCL = **19** | J15 (Shield socket) | 4.7 kΩ pull-ups on the GroovePush adapter (the carrier has none) |
+| I2C `Wire` (MCP23017 ×2) | SDA = **18**, SCL = **19** | J15 (Shield socket) | 4.7 kΩ pull-ups on PCB-A (R1/R2; the carrier has none) |
 | LED chain data (Choc keys) | **28** | J5.26 (`LED_DIN`) | through the carrier's U1 buffer (JP1) + R3 |
 | Built-in LED | **13** | J5.18 | left free (spare) |
 | USB | native | panel-mount cable | class-compliant USB-MIDI to the host, or to the Brain's USB-A host |
@@ -70,27 +70,25 @@ GPB0 (1), library pin numbers 0-6 and 8 (Adafruit_MCP23X17: 0-7=GPA0-7, 8-15=GPB
 | #2 | 0x21 | 6 | SHIFT | ✅ populated now |
 | #2 | 0x21 | 8 | METRONOME | ✅ populated now — **hoy reasignado** a cambio de modo mixer, no es click de metrónomo literal (pendiente de decisión, ver `GAPS_AND_IMPROVEMENTS.md`) |
 
-### +12 function buttons — ADR-0004 (provisional pin assignment)
-Assignment to a chip/pin is **provisional until the panel layout exists**: on the PCB each
-button goes to whichever MCP is physically closer. Functions are fixed; pins may move.
+### Final allocation — 3 MCP23017 (2026-10-19, supersedes the provisional table)
+The panel boards split the keys across two PCBs, and PCB-K1 alone has 15 keys (one more than a
+chip's 14 usable inputs), so there are **three** MCP23017. Authoritative table:
+[`hardware/boards/CONNECTORS.md`](../../hardware/boards/CONNECTORS.md).
 
-| MCP | Addr | Pin (lib #) | GPIO | Function |
+| MCP | Addr | Board | Lib pins 0–6 (GPA0–6) | Lib pins 8–14 (GPB0–6) |
 |---|---|---|---|---|
-| #1 | 0x20 | 9 | GPB1 | SESSION |
-| #1 | 0x20 | 10 | GPB2 | NOTE |
-| #1 | 0x20 | 11 | GPB3 | DEVICE |
-| #1 | 0x20 | 12 | GPB4 | MIX |
-| #1 | 0x20 | 13 | GPB5 | BROWSE |
-| #1 | 0x20 | 14 | GPB6 | DELETE |
-| #2 | 0x21 | 9 | GPB1 | BANK ◀ |
-| #2 | 0x21 | 10 | GPB2 | BANK ▶ |
-| #2 | 0x21 | 11 | GPB3 | OCTAVE ▲ |
-| #2 | 0x21 | 12 | GPB4 | OCTAVE ▼ |
-| #2 | 0x21 | 13 | GPB5 | DUPLICATE |
-| #2 | 0x21 | 14 | GPB6 | QUANTIZE |
+| U1 | 0x20 | PCB-A (SSOP-28, between E4 and E5) | 0: ENC_5, 1: ENC_6, 2: ENC_7, 3: ENC_8 switches; 4–6 spare | 8: ENC_1, 9: ENC_2, 10: ENC_3, 11: ENC_4 switches; 12–14 spare |
+| U1 | 0x21 | PCB-K1 | 0: OCT_UP, 1: OCT_DN, 2: BANK_R, 3: BANK_L; 4–6 spare | 8: METRO, 9: LOOP, 10: RECORD, 11: STOP, 12: PLAY; 13–14 spare |
+| U2 | 0x22 | PCB-K1 | UNDO, BROWSE, MIX, DEVICE, NOTE, SESSION, SHIFT | 8: DELETE, 9: DUPLICATE, 10: QUANTIZE, 11: NEW; 12–14 spare |
 
-**Totals:** 8 encoder switches + 20 function buttons = **28 inputs** (both chips full). A 29th
-button needs a third MCP23017 at `0x22`.
+The 0x20 and 0x21 orders look scrambled on purpose. 0x20's SSOP sits between E4 and E5: GPB (left
+side) reads ENC_1–4, GPA (right side) ENC_5–8. 0x21's SSOP sits between METRO and BANK_L, so GPB (left side)
+fans out to the transport keys and GPA (right side) to navigation, outermost pin to farthest key — a
+planar fan-out with no crossings (rev. 2026-10-20). Firmware maps by name, not by order.
+
+INT: 0x20 → Teensy 40; 0x21 + 0x22 share Teensy 41 (open-drain, 10 kΩ pull-up on PCB-K1).
+`ButtonManager` still implements the 2-chip Phase 1 table above until the firmware task
+for 3 MCPs lands.
 
 **Parts:** protoboard = 20 ordinary tactile switches. PCB = 20 **Kailh Choc V2** with an
 **SK6812-MINI-E** under each key (same parts as the GrooveForge Brain PCB-K, ADR-0004).
@@ -150,8 +148,9 @@ Pins 2/4 carry +5 V: **leave them unconnected** in GroovePush (the Pi 5 has its 
 **J15 / J16 — Audio Shield sockets (empty in GroovePush)**: J15.6 = SDA (18), J15.7 = SCL (19),
 J15.8 = pin 20 (TX5), J15.9 = pin 21 (RX5), J15.11 = pin 23, J15.12 = +3.3 V, J15.13 = GND;
 J16.5 = pin 8, J16.6 = pin 7, J16.14 = GND. The two rows are 15.24 mm apart (6 × 2.54), so a
-**GroovePush "shield adapter" on perfboard** plugs into both and can't sit offset: it carries the
-4.7 kΩ I2C pull-ups and keyed JST connectors to the M4 (Serial5) and the MCP board (I2C).
+**PCB-S, the GroovePush shield adapter** (`hardware/boards/pcb-s`) plugs into both and can't sit offset: it only re-wires them to
+keyed JST connectors, to the M4 (Serial5) and to PCB-A J2 (I2C). The 4.7 kΩ I2C pull-ups ended up
+on PCB-A (rev. 2026-10-20).
 Pins 7, 8 and 23 stay as spares there.
 
 **Power**: carrier USB-C (J10, power-only) → 3 A polyfuse → TVS → +5 V → Teensy VIN (the
