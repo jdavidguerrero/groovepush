@@ -1,5 +1,8 @@
 # BIBLIA DE PRODUCCIÓN — Temporada 1 · "Dos cerebros, un banco"
 
+> **2026-10-31:** este material es la base del **Acto 3 (EP13-EP17) de la Temporada 1**, que se graba cuando el Brain
+> esté terminado. Biblia vigente: `grooveforge-brain/apps/docs/content/temporada-1/BIBLIA_T1_LIVESET.md`.
+
 > **Reenfocada el 2026-10-22.** La Temporada 1 es ahora solo el GrooveForge Brain · Studio como instrumento para el
 > live set y la producción: `grooveforge-brain/apps/docs/content/temporada-1/BIBLIA_T1_LIVESET.md`. Este documento
 > queda como material de la Temporada 2 (GroovePush) y como referencia de la auditoría técnica.
